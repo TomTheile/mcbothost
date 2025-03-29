@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Herobrine AFK Bot</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Admin-spezifische Styles */
+        .admin-section {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            flex: 1;
+        }
+        
+        .admin-card {
+            background-color: rgba(0, 0, 0, 0.7);
+            border: 2px solid #1eff00;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 0 15px rgba(30, 255, 0, 0.3);
+            margin-bottom: 20px;
+        }
+        
+        .admin-card h3 {
+            color: #1eff00;
+            margin-top: 0;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .admin-tabs {
+            display: flex;
+            background-color: rgba(0, 0, 0, 0.7);
+            border-radius: 10px 10px 0 0;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        
+        .tab-button {
+            padding: 12px 20px;
+            background-color: rgba(15, 15, 15, 0.7);
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            flex: 1;
+            font-size: 1rem;
+            transition: background-color 0.3s;
+        }
+        
+        .tab-button.active {
+            background-color: #1eff00;
+            color: #000;
+            font-weight: bold;
+        }
+        
+        .tab-button:hover:not(.active) {
+            background-color: rgba(30, 255, 0, 0.2);
+        }
+        
+        /* Admin/Console Tabs */
+        .admin-tab-navigation {
+            margin-bottom: 20px;
+        }
+        
+        .admin-tab-navigation .tabs {
+            display: flex;
+            background-color: rgba(0, 0, 0, 0.7);
+            border-radius: 5px;
+            overflow: hidden;
+            border: 1px solid #1eff00;
+        }
+        
+        .tab-nav {
+            padding: 10px 20px;
+            background-color: rgba(15, 15, 15, 0.7);
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            flex: 1;
+            font-size: 1rem;
+            transition: background-color 0.3s;
+        }
+        
+        .tab-nav.active {
+            background-color: #1eff00;
+            color: #000;
+            font-weight: bold;
+        }
+        
+        .tab-nav:hover:not(.active) {
+            background-color: rgba(30, 255, 0, 0.2);
+        }
+        
+        .tab-panel {
+            display: none;
+        }
+        
+        .tab-panel.active {
+            display: block;
+        }
+        
+        .tab-content {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .user-list, .bot-list {
+            max-height: 250px;
+            overflow-y: auto;
+        }
+        
+        .user-item, .bot-item {
+            background-color: rgba(15, 15, 15, 0.7);
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .user-info, .bot-info {
+            flex: 1;
+        }
+        
+        .user-actions, .bot-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .user-actions button, .bot-actions button, .save-btn {
+            background-color: #1eff00;
+            color: #000;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+        
+        .bot-actions button.stop-btn {
+            background-color: #ff3838;
+        }
+        
+        .user-actions button.ban-btn.active {
+            background-color: #ff3838;
+            color: white;
+        }
+        
+        .user-actions button:disabled {
+            background-color: #777;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        
+        .user-actions button:hover, .bot-actions button:hover, .save-btn:hover {
+            opacity: 0.9;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+        
+        .stat-item {
+            background-color: rgba(15, 15, 15, 0.7);
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            color: #1eff00;
+            margin: 10px 0;
+        }
+        
+        .stat-label {
+            color: #a0a0a0;
+            font-size: 0.9rem;
+        }
+        
+        .login-logs {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .log-item {
+            background-color: rgba(15, 15, 15, 0.7);
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+        }
+        
+        .log-item span {
+            color: #1eff00;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #fff;
+        }
+        
+        .form-group input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            border-radius: 3px;
+            border: 1px solid #1eff00;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: #fff;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .checkbox-group label {
+            display: flex;
+            align-items: center;
+            color: #fff;
+            cursor: pointer;
+        }
+        
+        .checkbox-group input[type="checkbox"] {
+            margin-right: 5px;
+        }
+        
+        .save-btn {
+            align-self: flex-start;
+            padding: 8px 15px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header (Top) -->
+        <div class="header">
+            <h1>Herobrine AFK Bot - Admin</h1>
+            <div class="quick-links">
+                <span id="admin-username">HerobrineMaster</span>
+                <a href="dashboard.html">Zum Dashboard</a>
+                <a href="#" id="logout-link">Abmelden</a>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <!-- Admin Tab-Navigation -->
+            <div class="admin-tabs">
+                <button class="tab-button active" data-tab="admin-tab">Admin-Bereich</button>
+                <button class="tab-button" data-tab="bot-tab">Bot-Verwaltung</button>
+            </div>
+        
+            <!-- Tab-Navigation für Admin und Console -->
+            <div class="admin-tab-navigation">
+                <div class="tabs">
+                    <button id="admin-panel-tab" class="tab-nav active">Admin-Panel</button>
+                    <button id="console-tab" class="tab-nav">Console</button>
+                </div>
+            </div>
+            
+            <!-- Admin-Panel Tab -->
+            <div id="admin-panel-content" class="tab-panel active">
+                <!-- Admin Section - Tab-Inhalt -->
+                <div class="tab-content" id="admin-tab">
+                    <!-- Statistiken -->
+                    <div class="admin-card">
+                        <h3>Statistiken</h3>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <div class="stat-value" id="user-count">0</div>
+                                <div class="stat-label">Registrierte Benutzer</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value" id="active-bots">0</div>
+                                <div class="stat-label">Aktive Bots</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value" id="server-uptime">0h</div>
+                                <div class="stat-label">Server-Laufzeit</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value" id="logins-today">0</div>
+                                <div class="stat-label">Logins heute</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Benutzerverwaltung -->
+                    <div class="admin-card">
+                        <h3>Benutzerverwaltung</h3>
+                        <div class="user-list" id="user-list">
+                            <!-- Benutzer werden dynamisch hinzugefügt -->
+                            <div class="user-item">
+                                <div class="user-info">
+                                    <strong>TurboKid</strong> (TurboKid@outlook.de)
+                                    <div style="font-size: 0.8rem; color: #a0a0a0;">Rolle: Benutzer | Status: Verifiziert</div>
+                                </div>
+                                <div class="user-actions">
+                                    <button>Bearbeiten</button>
+                                    <button class="delete">Löschen</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Login-Logs -->
+                    <div class="admin-card">
+                        <h3>Login-Protokoll</h3>
+                        <div class="login-logs" id="login-logs">
+                            <!-- Logs werden dynamisch hinzugefügt -->
+                            <div class="log-item">
+                                <strong>29.03.2025 12:35</strong> - Benutzer <span>TurboKid</span> hat sich angemeldet
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Bot-Verwaltung Tab-Inhalt -->
+                <div class="tab-content" id="bot-tab" style="display: none;">
+            </div>
+            
+            <!-- Console Tab -->
+            <div id="console-panel-content" class="tab-panel" style="display: none;">
+                <!-- Bot-Übersicht -->
+                <div class="admin-card">
+                    <h3>Bot-Übersicht</h3>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-value" id="total-bots">0</div>
+                            <div class="stat-label">Gesamt-Bots</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="connected-bots">0</div>
+                            <div class="stat-label">Verbundene Bots</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="servers-count">0</div>
+                            <div class="stat-label">Aktive Server</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="total-uptime">0h</div>
+                            <div class="stat-label">Gesamte Laufzeit</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Aktive Bots -->
+                <div class="admin-card">
+                    <h3>Aktive Bots</h3>
+                    <div class="bot-list" id="bot-list">
+                        <!-- Demo-Bot für die Anzeige -->
+                        <div class="bot-item">
+                            <div class="bot-info">
+                                <strong>TurboKid_Bot</strong>
+                                <div style="font-size: 0.8rem; color: #a0a0a0;">Server: play.hypixel.net | Version: 1.21.4</div>
+                                <div style="font-size: 0.8rem; color: #1eff00;">Status: Online seit 2h 15m</div>
+                            </div>
+                            <div class="bot-actions">
+                                <button class="view-btn">Anzeigen</button>
+                                <button class="stop-btn">Stoppen</button>
+                            </div>
+                        </div>
+                        <div class="bot-item">
+                            <div class="bot-info">
+                                <strong>Demo_Bot</strong>
+                                <div style="font-size: 0.8rem; color: #a0a0a0;">Server: mc.example.com | Version: 1.20</div>
+                                <div style="font-size: 0.8rem; color: #1eff00;">Status: Online seit 0h 45m</div>
+                            </div>
+                            <div class="bot-actions">
+                                <button class="view-btn">Anzeigen</button>
+                                <button class="stop-btn">Stoppen</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Bot-Konfiguration -->
+                <div class="admin-card">
+                    <h3>Bot-Konfiguration</h3>
+                    <div class="bot-config-form">
+                        <div class="form-group">
+                            <label>Maximale Bots pro Benutzer</label>
+                            <input type="number" id="max-bots" value="1" min="1" max="10">
+                        </div>
+                        <div class="form-group">
+                            <label>Unterstützte Minecraft-Versionen</label>
+                            <div class="checkbox-group">
+                                <label><input type="checkbox" checked> 1.8</label>
+                                <label><input type="checkbox" checked> 1.12</label>
+                                <label><input type="checkbox" checked> 1.16</label>
+                                <label><input type="checkbox" checked> 1.17</label>
+                                <label><input type="checkbox" checked> 1.18</label>
+                                <label><input type="checkbox" checked> 1.19</label>
+                                <label><input type="checkbox" checked> 1.20</label>
+                                <label><input type="checkbox" checked> 1.21.4</label>
+                            </div>
+                        </div>
+                        <button class="save-btn">Speichern</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>Der fortschrittliche Minecraft Bot-Service - Administratorbereich</p>
+            <div class="footer-links">
+                <a href="#">Nutzungsbedingungen</a>
+                <a href="#">Datenschutz</a>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeDatabase, getUserData } from './database.js';
+        
+        // Beim Laden der Seite prüfen, ob der Benutzer ein Admin ist
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAdminAccess();
+            setupTabNavigation();
+        });
+        
+        // Admin/Console Tab-Navigation einrichten
+        function setupTabNavigation() {
+            const adminPanelTab = document.getElementById('admin-panel-tab');
+            const consoleTab = document.getElementById('console-tab');
+            const adminPanelContent = document.getElementById('admin-panel-content');
+            const consolePanelContent = document.getElementById('console-panel-content');
+            
+            // Admin-Panel Tab Click-Event
+            adminPanelTab.addEventListener('click', () => {
+                adminPanelTab.classList.add('active');
+                consoleTab.classList.remove('active');
+                adminPanelContent.classList.add('active');
+                adminPanelContent.style.display = 'block';
+                consolePanelContent.classList.remove('active');
+                consolePanelContent.style.display = 'none';
+            });
+            
+            // Console Tab Click-Event
+            consoleTab.addEventListener('click', () => {
+                consoleTab.classList.add('active');
+                adminPanelTab.classList.remove('active');
+                consolePanelContent.classList.add('active');
+                consolePanelContent.style.display = 'block';
+                adminPanelContent.classList.remove('active');
+                adminPanelContent.style.display = 'none';
+            });
+        }
+        
+        // Admin-Zugriff überprüfen
+        async function checkAdminAccess() {
+            try {
+                // Überprüfen, ob der Benutzer im localStorage gespeichert ist
+                const username = localStorage.getItem('username');
+                const userEmail = localStorage.getItem('userEmail');
+                
+                if (!username || !userEmail) {
+                    redirectToLogin('Du musst dich zuerst anmelden');
+                    return;
+                }
+                
+                // Benutzer aus dem Server abrufen
+                const response = await fetch(`/api/users/get-by-email?email=${encodeURIComponent(userEmail)}`);
+                const data = await response.json();
+                
+                if (!data.success || !data.user || data.user.role !== 'admin') {
+                    redirectToLogin('Du hast keinen Zugriff auf den Administratorbereich');
+                    return;
+                }
+                
+                // Admin-Bereich anzeigen
+                document.getElementById('admin-username').textContent = username;
+                loadDashboardData();
+                
+            } catch (error) {
+                console.error('Fehler beim Überprüfen des Admin-Zugriffs:', error);
+                redirectToLogin('Ein Fehler ist aufgetreten. Bitte versuche es erneut.');
+            }
+        }
+        
+        // Weiterleitung zur Login-Seite
+        function redirectToLogin(message) {
+            alert(message);
+            window.location.href = 'index.html';
+        }
+        
+        // Daten für das Dashboard laden
+        async function loadDashboardData() {
+            try {
+                const userEmail = localStorage.getItem('userEmail');
+                
+                // Statistiken laden
+                const statsResponse = await fetch(`/api/admin/stats?admin_email=${encodeURIComponent(userEmail)}`);
+                const statsData = await statsResponse.json();
+                
+                if (statsData.success) {
+                    document.getElementById('user-count').textContent = statsData.stats.userCount || '0';
+                    document.getElementById('active-bots').textContent = statsData.stats.activeBots || '0';
+                    document.getElementById('server-uptime').textContent = statsData.stats.uptime || '0h';
+                    document.getElementById('logins-today').textContent = statsData.stats.loginsToday || '0';
+                }
+                
+                // Benutzerliste laden
+                const usersResponse = await fetch(`/api/admin/users?admin_email=${encodeURIComponent(userEmail)}`);
+                const usersData = await usersResponse.json();
+                
+                if (usersData.success) {
+                    renderUserList(usersData.users);
+                    // Event-Listener für Benutzeraktionen hinzufügen
+                    addUserActionListeners();
+                }
+                
+                // Login-Logs laden
+                const logsResponse = await fetch(`/api/admin/logs?admin_email=${encodeURIComponent(userEmail)}`);
+                const logsData = await logsResponse.json();
+                
+                if (logsData.success) {
+                    renderLogs(logsData.logs);
+                }
+                
+            } catch (error) {
+                console.error('Fehler beim Laden der Dashboard-Daten:', error);
+                alert('Fehler beim Laden der Dashboard-Daten. Bitte aktualisiere die Seite.');
+            }
+        }
+        
+        // Event-Listener für Benutzeraktionen hinzufügen
+        function addUserActionListeners() {
+            const userEmail = localStorage.getItem('userEmail');
+            
+            // Event-Listener für Verifizierungsschaltflächen
+            document.querySelectorAll('.verify-btn:not([disabled])').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const targetEmail = btn.getAttribute('data-email');
+                    
+                    try {
+                        const response = await fetch('/api/admin/verify-user', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                admin_email: userEmail,
+                                user_email: targetEmail
+                            })
+                        });
+                        
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            alert(data.message);
+                            loadDashboardData(); // Dashboard aktualisieren
+                        } else {
+                            alert('Fehler: ' + (data.error || 'Unbekannter Fehler'));
+                        }
+                    } catch (error) {
+                        console.error('Fehler beim Verifizieren des Benutzers:', error);
+                        alert('Ein Fehler ist aufgetreten. Bitte versuche es erneut.');
+                    }
+                });
+            });
+            
+            // Event-Listener für Sperr-/Entsperrschaltflächen
+            document.querySelectorAll('.ban-btn').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const targetEmail = btn.getAttribute('data-email');
+                    const isBanned = btn.classList.contains('active');
+                    
+                    // Wenn der Benutzer gesperrt werden soll, nach einem Grund fragen
+                    let banReason = '';
+                    if (!isBanned) {
+                        banReason = prompt('Gib bitte einen Grund für die Sperrung ein:');
+                        if (banReason === null) return; // Benutzer hat abgebrochen
+                    }
+                    
+                    try {
+                        const response = await fetch('/api/admin/toggle-ban', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                admin_email: userEmail,
+                                user_email: targetEmail,
+                                ban_status: !isBanned,
+                                ban_reason: banReason
+                            })
+                        });
+                        
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            alert(data.message);
+                            loadDashboardData(); // Dashboard aktualisieren
+                        } else {
+                            alert('Fehler: ' + (data.error || 'Unbekannter Fehler'));
+                        }
+                    } catch (error) {
+                        console.error('Fehler beim Ändern des Sperrstatus:', error);
+                        alert('Ein Fehler ist aufgetreten. Bitte versuche es erneut.');
+                    }
+                });
+            });
+        }
+        
+        // Benutzerliste rendern
+        function renderUserList(users) {
+            const userList = document.getElementById('user-list');
+            userList.innerHTML = '';
+            
+            // Mit echten Benutzerdaten arbeiten
+            users.forEach(user => {
+                const userItem = document.createElement('div');
+                userItem.className = 'user-item';
+                
+                // Banngrund-Text erstellen, wenn der Benutzer gesperrt ist
+                const banReasonText = user.banned && user.ban_reason 
+                    ? `<div style="font-size: 0.8rem; color: #ff3838;">Grund: ${user.ban_reason}</div>` 
+                    : '';
+                
+                userItem.innerHTML = `
+                    <div class="user-info">
+                        <strong>${user.username}</strong> (${user.email})
+                        <div style="font-size: 0.8rem; color: #a0a0a0;">
+                            Rolle: ${user.role === 'admin' ? 'Administrator' : 'Benutzer'} | 
+                            Status: ${user.verified ? 'Verifiziert' : 'Nicht verifiziert'}
+                            ${user.banned ? ' | <span style="color: #ff3838;">Gesperrt</span>' : ''}
+                        </div>
+                        ${banReasonText}
+                    </div>
+                    <div class="user-actions">
+                        <button class="verify-btn" data-email="${user.email}" ${user.verified ? 'disabled' : ''}>
+                            ${user.verified ? 'Verifiziert' : 'Verifizieren'}
+                        </button>
+                        <button class="ban-btn ${user.banned ? 'active' : ''}" data-email="${user.email}">
+                            ${user.banned ? 'Entsperren' : 'Sperren'}
+                        </button>
+                    </div>
+                `;
+                userList.appendChild(userItem);
+            });
+        }
+        
+        // Logs rendern
+        function renderLogs(logs) {
+            const logsList = document.getElementById('login-logs');
+            logsList.innerHTML = '';
+            
+            // Echte Logs anzeigen
+            if (logs && logs.length > 0) {
+                logs.forEach(log => {
+                    const logItem = document.createElement('div');
+                    logItem.className = 'log-item';
+                    logItem.innerHTML = `
+                        <strong>${log.date}</strong> - Benutzer <span>${log.username}</span> hat sich angemeldet
+                        ${log.ip ? `<div style="font-size: 0.8rem; color: #777;">IP: ${log.ip}</div>` : ''}
+                    `;
+                    logsList.appendChild(logItem);
+                });
+            } else {
+                // Fallback, wenn keine Logs vorhanden sind
+                logsList.innerHTML = '<div class="log-item">Keine Login-Protokolle vorhanden</div>';
+            }
+        }
+        
+        // Tab-Wechsel-Funktion
+        document.querySelectorAll('.tab-button').forEach(button => {
+            button.addEventListener('click', () => {
+                // Alle Tabs deaktivieren
+                document.querySelectorAll('.tab-button').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                
+                // Alle Tab-Inhalte ausblenden
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.style.display = 'none';
+                });
+                
+                // Angeklickten Tab aktivieren
+                button.classList.add('active');
+                
+                // Entsprechenden Tab-Inhalt anzeigen
+                const tabId = button.getAttribute('data-tab');
+                document.getElementById(tabId).style.display = 'flex';
+                
+                // Bot-Tab-Daten laden, wenn Bot-Tab geöffnet wird
+                if (tabId === 'bot-tab') {
+                    loadBotData();
+                }
+            });
+        });
+        
+        // Bot-Daten laden (für den Bot-Tab)
+        function loadBotData() {
+            // Simulierte Daten für die Demonstration
+            document.getElementById('total-bots').textContent = '5';
+            document.getElementById('connected-bots').textContent = '2';
+            document.getElementById('servers-count').textContent = '2';
+            document.getElementById('total-uptime').textContent = '24h';
+            
+            // In einer echten Anwendung würden wir hier Daten vom Server laden
+        }
+        
+        // Abmelden-Link
+        document.getElementById('logout-link').addEventListener('click', (e) => {
+            e.preventDefault();
+            localStorage.removeItem('username');
+            localStorage.removeItem('userEmail');
+            window.location.href = 'index.html';
+        });
+    </script>
+</body>
+</html>
