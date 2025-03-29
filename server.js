@@ -270,6 +270,7 @@ app.get('/api/users/verify/:token', (req, res) => {
 
 // Minecraft-Bot-API-Routen
 app.post('/api/minecraft/start-bot', (req, res) => {
+    res.setHeader('Content-Type', 'application/json');
     const { username, serverIp, serverPort, mcVersion } = req.body;
 
     if (!username || !serverIp) {
@@ -279,8 +280,8 @@ app.post('/api/minecraft/start-bot', (req, res) => {
         });
     }
 
-    // Validiere Server-IP Format
-    const ipRegex = /^([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$/;
+    // Validiere Server-IP Format (erweiterte Regex für mehr Domains)
+    const ipRegex = /^[a-zA-Z0-9][a-zA-Z0-9-_.]*[a-zA-Z0-9]$/;
     if (!ipRegex.test(serverIp) && serverIp !== 'localhost') {
         return res.status(400).json({
             success: false,
@@ -334,6 +335,7 @@ app.post('/api/minecraft/start-bot', (req, res) => {
 });
 
 app.post('/api/minecraft/stop-bot', (req, res) => {
+    res.setHeader('Content-Type', 'application/json');
     const { username } = req.body;
 
     if (!username) {
@@ -369,6 +371,7 @@ app.post('/api/minecraft/stop-bot', (req, res) => {
 });
 
 app.post('/api/minecraft/send-command', (req, res) => {
+    res.setHeader('Content-Type', 'application/json');
     const { username, command } = req.body;
 
     if (!username || !command) {
