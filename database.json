@@ -1,0 +1,63 @@
+{
+  "users": {
+    "example@email.com": {
+      "uid": "user-001",
+      "email": "example@email.com",
+      "username": "DemoUser",
+      "password": "password123",
+      "verified": false,
+      "role": "user",
+      "banned": false,
+      "created": "2025-03-28T10:00:00.000Z"
+    },
+    "TurboKid@outlook.de": {
+      "uid": "user-002",
+      "email": "TurboKid@outlook.de",
+      "username": "TurboKid",
+      "password": "minecraft",
+      "verified": true,
+      "role": "user",
+      "banned": false,
+      "created": "2025-03-28T11:30:00.000Z"
+    },
+    "admin@herobrine.de": {
+      "uid": "admin-001",
+      "email": "admin@herobrine.de",
+      "username": "HerobrineMaster",
+      "password": "admin123",
+      "verified": true,
+      "role": "admin",
+      "banned": false,
+      "created": "2025-03-27T09:00:00.000Z",
+      "login_approved": true
+    },
+    "demo@example.com": {
+      "uid": "user-fxiqekah0",
+      "email": "demo@example.com",
+      "username": "DemoUser",
+      "password": "password123",
+      "verified": false,
+      "created": "2025-03-29T12:04:54.098Z",
+      "role": "user",
+      "banned": false
+    },
+    "gesperrt@example.com": {
+      "uid": "user-003",
+      "email": "gesperrt@example.com",
+      "username": "GesperrtUser",
+      "password": "passwort123",
+      "verified": true,
+      "role": "user",
+      "banned": true,
+      "created": "2025-03-28T14:45:00.000Z",
+      "ban_reason": "Spam im Chat"
+    }
+  },
+  "pending_logins": {
+    "50q43z5uywc5ws1y8afnsy": {
+      "user_email": "admin@herobrine.de",
+      "created": "2025-03-29T12:22:42.422Z",
+      "expires": "2025-03-29T12:52:42.422Z"
+    }
+  }
+}
