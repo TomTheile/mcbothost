@@ -358,14 +358,18 @@ app.post('/api/users/login', async (req, res) => {
     }
 
     // Verbindung prüfen
+    let db;
     try {
-        const db = readDatabase();
+        db = readDatabase();
+        if (!db || !db.users) {
+            throw new Error('Datenbank nicht verfügbar');
+        }
         console.log("Datenbankverbindung erfolgreich");
     } catch (error) {
         console.error("Datenbankfehler:", error);
         return res.status(500).json({
             success: false,
-            error: 'Verbindungsfehler beim Anmelden. Bitte versuche es später erneut.'
+            error: 'Serververbindung konnte nicht hergestellt werden. Bitte versuche es später erneut.'
         });
     }
 
