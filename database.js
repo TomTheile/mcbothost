@@ -1,476 +1,326 @@
-// Einfache Datenbankschnittstelle für die JSON-Datei
-const fs = require('fs');
-const path = require('path');
+/**
+ * In-Memory-Datenbank für das AFK Bot System
+ * In einer Produktionsumgebung würde dies durch eine echte Datenbank ersetzt werden
+ */
 
-// Der Pfad zur Datenbankdatei
-const DB_PATH = path.join(__dirname, 'database.json');
+// In-Memory-Speicher
+const db = {
+    users: [],
+    bots: [],
+    logs: [],
+    sessions: []
+};
 
-// JSON-Datenbank lesen
+/**
+ * Liest die Datenbank aus dem localStorage (falls vorhanden)
+ */
 function readDatabase() {
     try {
-        if (fs.existsSync(DB_PATH)) {
-            const data = fs.readFileSync(DB_PATH, 'utf8');
-            return JSON.parse(data);
+        const storedData = localStorage.getItem('afk_bot_db');
+        if (storedData) {
+            const parsedData = JSON.parse(storedData);
+            Object.assign(db, parsedData);
+            console.log('Datenbank erfolgreich aus localStorage geladen');
         }
     } catch (error) {
         console.error('Fehler beim Lesen der Datenbank:', error);
     }
-    return { users: {} };
 }
 
-// JSON-Datenbank schreiben
-function writeDatabase(data) {
+/**
+ * Schreibt die Datenbank in den localStorage
+ */
+function writeDatabase(data = db) {
     try {
-        fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2), 'utf8');
-        return true;
+        localStorage.setItem('afk_bot_db', JSON.stringify(data));
+        console.log('Datenbank erfolgreich in localStorage gespeichert');
     } catch (error) {
         console.error('Fehler beim Schreiben der Datenbank:', error);
-        return false;
     }
 }
 
-// Initialisierung der Datenbank
+/**
+ * Initialisiert die Datenbank mit Beispieldaten
+ */
 function initializeDatabase() {
-    console.log("Datenbank wird initialisiert...");
+    // Prüfen, ob bereits Daten vorhanden sind
+    readDatabase();
     
-    // Prüfen, ob die Datenbankdatei existiert
-    if (!fs.existsSync(DB_PATH)) {
-        // Leere Datenbank erstellen
-        writeDatabase({ users: {} });
-        console.log("Neue Datenbank wurde erstellt.");
-    } else {
-        console.log("Existierende Datenbank gefunden.");
+    // Wenn keine Benutzer vorhanden sind, Beispielbenutzer erstellen
+    if (db.users.length === 0) {
+        db.users = [
+            {
+                uid: 'admin_id',
+                username: 'Administrator',
+                email: 'admin@herobrine-bot.de',
+                password: 'admin123', // In einer echten Anwendung würde dies gehasht werden
+                role: 'admin',
+                created_at: new Date().toISOString(),
+                verified: true,
+                last_login: new Date().toISOString()
+            },
+            {
+                uid: 'user_1',
+                username: 'TestUser',
+                email: 'test@example.com',
+                password: 'test123',
+                role: 'user',
+                created_at: new Date().toISOString(),
+                verified: true,
+                last_login: new Date().toISOString()
+            }
+        ];
+        
+        // Beispiel-Bot für den Testbenutzer erstellen
+        db.bots = [
+            {
+                id: 'bot_1',
+                user_id: 'user_1',
+                server_address: 'mc.example.com',
+                server_port: 25565,
+                username: 'TestBot',
+                status: 'offline',
+                created_at: new Date().toISOString(),
+                last_active: null,
+                total_online_time: 0,
+                config: {
+                    auto_reconnect: true,
+                    anti_afk: true,
+                    chat_commands: []
+                }
+            }
+        ];
+        
+        // Beispiel-Logs
+        db.logs = [
+            {
+                id: 'log_1',
+                bot_id: 'bot_1',
+                timestamp: new Date().toISOString(),
+                type: 'info',
+                message: 'Bot wurde erstellt'
+            }
+        ];
+        
+        // Datenbank speichern
+        writeDatabase();
+        console.log('Datenbank mit Beispieldaten initialisiert');
     }
-    
-    return { success: true };
 }
 
-// Simuliert eine Datenbank im Arbeitsspeicher für die Client-Seite
-let inMemoryUsers = {};
-
-// Benutzerregistrierung
+/**
+ * Registriert einen neuen Benutzer
+ * @param {string} email - E-Mail-Adresse des Benutzers
+ * @param {string} password - Passwort des Benutzers
+ * @param {string} username - Benutzername
+ * @returns {Promise<Object>} - Ergebnis der Registrierung
+ */
 async function registerUser(email, password, username) {
-    return new Promise(async (resolve) => {
-        console.log(`Registrierung für: ${email}, Benutzername: ${username}`);
-        
-        // Benutzer in der Datenbank speichern
-        const db = readDatabase();
-        
-        // Prüfen, ob Benutzer bereits existiert
-        if (db.users && db.users[email]) {
-            resolve({
-                success: false,
-                error: "Diese E-Mail-Adresse wird bereits verwendet"
-            });
-            return;
-        }
-        
-        // Prüfen, ob der Benutzername bereits existiert
-        for (const userEmail in db.users) {
-            if (db.users[userEmail].username === username) {
-                resolve({
-                    success: false,
-                    error: "Dieser Benutzername wird bereits verwendet"
-                });
-                return;
-            }
-        }
-        
-        try {
-            // Benutzer speichern
-            const userId = 'user-' + Math.random().toString(36).substr(2, 9);
-            
-            if (!db.users) {
-                db.users = {};
-            }
-            
-            db.users[email] = {
-                uid: userId,
-                email: email,
-                username: username,
-                password: password, // Passwort im Klartext speichern (nur für Testzwecke!)
-                verified: true, // Für Testzwecke auf true gesetzt, im Produktionssystem würde hier false stehen
-                created: new Date().toISOString(),
-                login_approved: true
-            };
-            
-            writeDatabase(db);
-            
-            // Erfolgreiche Registrierung
-            resolve({ 
-                success: true, 
-                user: { 
-                    uid: userId, 
-                    email: email,
-                    username: username
-                } 
-            });
-        } catch (error) {
-            console.error('Fehler bei der Benutzerregistrierung:', error);
-            resolve({
-                success: false,
-                error: "Interner Serverfehler bei der Registrierung"
-            });
-        }
-    });
+    // Prüfen, ob die E-Mail bereits verwendet wird
+    const existingUser = db.users.find(user => user.email === email);
+    if (existingUser) {
+        return { success: false, error: 'E-Mail-Adresse wird bereits verwendet' };
+    }
+    
+    // Prüfen, ob der Benutzername bereits verwendet wird
+    const existingUsername = db.users.find(user => user.username === username);
+    if (existingUsername) {
+        return { success: false, error: 'Benutzername wird bereits verwendet' };
+    }
+    
+    // Neuen Benutzer erstellen
+    const userId = 'user_' + Date.now();
+    const newUser = {
+        uid: userId,
+        username,
+        email,
+        password, // In einer echten Anwendung würde dies gehasht werden
+        role: 'user',
+        created_at: new Date().toISOString(),
+        verified: false, // Benutzer muss seine E-Mail bestätigen
+        last_login: null
+    };
+    
+    // Benutzer zur Datenbank hinzufügen
+    db.users.push(newUser);
+    writeDatabase();
+    
+    // Bestätigungs-E-Mail senden (in diesem Beispiel simuliert)
+    try {
+        await sendVerificationEmail(userId, email, username);
+    } catch (error) {
+        console.error('Fehler beim Senden der Bestätigungs-E-Mail:', error);
+    }
+    
+    return { 
+        success: true, 
+        message: 'Benutzer erfolgreich registriert. Bitte überprüfe deine E-Mails zur Bestätigung deines Kontos.',
+        user: { uid: userId, username, email, role: 'user' }
+    };
 }
 
-// Benutzeranmeldung
+/**
+ * Meldet einen Benutzer an
+ * @param {string} email - E-Mail-Adresse des Benutzers
+ * @param {string} password - Passwort des Benutzers
+ * @returns {Promise<Object>} - Ergebnis der Anmeldung
+ */
 async function loginUser(email, password) {
-    return new Promise(async (resolve) => {
-        console.log(`Anmeldung für: ${email}`);
-        
-        try {
-            // Benutzer in der Datenbank suchen
-            const db = readDatabase();
-            
-            // Prüfe, ob Benutzer existiert
-            if (db.users && db.users[email]) {
-                const user = db.users[email];
-                
-                // Prüfe ob das Konto verifiziert ist
-                if (!user.verified) {
-                    resolve({
-                        success: false,
-                        error: "Dein Konto wurde noch nicht verifiziert. Bitte prüfe deine E-Mails."
-                    });
-                    return;
-                }
-                
-                // Prüfe ob Login-Berechtigung erteilt wurde
-                if (!user.login_approved) {
-                    resolve({
-                        success: false,
-                        error: "Dein Konto wartet noch auf die Freischaltung durch einen Administrator."
-                    });
-                    return;
-                }
-                
-                // Direkt Passwort vergleichen (Klartext)
-                if (user.password === password) {
-                    // Erfolgreicher Login - Zeitstempel aktualisieren
-                    db.users[email].last_login = new Date().toISOString();
-                    writeDatabase(db);
-                    
-                    resolve({ 
-                        success: true, 
-                        user: { 
-                            uid: user.uid, 
-                            email: user.email,
-                            username: user.username,
-                            verified: user.verified,
-                            role: user.role || 'user'
-                        } 
-                    });
-                    return;
-                }
-            }
-            
-            // Benutzer nicht gefunden oder falsches Passwort
-            resolve({
-                success: false,
-                error: "Ungültige E-Mail oder Passwort"
-            });
-        } catch (error) {
-            console.error('Fehler beim Login:', error);
-            resolve({
-                success: false,
-                error: "Interner Serverfehler beim Login"
-            });
-        }
+    // Benutzer in der Datenbank suchen
+    const user = db.users.find(user => user.email === email);
+    
+    // Prüfen, ob der Benutzer existiert
+    if (!user) {
+        return { success: false, error: 'Ungültige Anmeldedaten' };
+    }
+    
+    // Passwort überprüfen
+    if (user.password !== password) { // In einer echten Anwendung würde dies gehashed verglichen werden
+        return { success: false, error: 'Ungültige Anmeldedaten' };
+    }
+    
+    // Prüfen, ob die E-Mail-Adresse bestätigt wurde
+    if (!user.verified) {
+        return { success: false, error: 'Bitte bestätige zuerst deine E-Mail-Adresse' };
+    }
+    
+    // Anmeldezeit aktualisieren
+    user.last_login = new Date().toISOString();
+    writeDatabase();
+    
+    // Token generieren (in einer echten Anwendung würde ein JWT verwendet werden)
+    const token = 'token_' + Date.now();
+    
+    // Session erstellen
+    db.sessions.push({
+        token,
+        user_id: user.uid,
+        created_at: new Date().toISOString()
     });
+    
+    return {
+        success: true,
+        token,
+        user: {
+            uid: user.uid,
+            username: user.username,
+            email: user.email,
+            role: user.role
+        }
+    };
 }
 
-// E-Mail-Verifizierung senden
+/**
+ * Sendet eine Bestätigungs-E-Mail an einen Benutzer
+ * @param {string} userId - ID des Benutzers
+ * @param {string} email - E-Mail-Adresse des Benutzers
+ * @param {string} username - Benutzername
+ * @returns {Promise<boolean>} - Erfolg oder Misserfolg
+ */
 async function sendVerificationEmail(userId, email, username) {
-    console.log(`Verifizierungs-E-Mail wird vorbereitet für: ${email} (${username})`);
+    console.log(`Sende Bestätigungs-E-Mail an ${email} (${username})...`);
     
-    try {
-        // Hilfsfunktionen für E-Mail-Versand
-        const nodemailer = require('nodemailer');
-        const { v4: uuidv4 } = require('uuid');
-        
-        // Datenbank lesen
-        const db = readDatabase();
-        
-        // Verifikations-Token erstellen
-        const token = uuidv4();
-        const now = Date.now();
-        
-        // Token in der Datenbank speichern
-        db.verifications = db.verifications || {};
-        db.verifications[token] = {
-            userId,
-            email,
-            username,
-            timestamp: now
-        };
-        
-        // Datenbank aktualisieren
-        writeDatabase(db);
-        
-        // Verwende lokalen Testserver für E-Mail (im Entwicklungsmodus)
-        // In der Produktion würde hier die Konfiguration für einen richtigen SMTP-Server stehen
-        const transporter = nodemailer.createTransport({
-            host: 'smtp.ethereal.email',
-            port: 587,
-            auth: {
-                user: process.env.EMAIL_USER || 'ethereal.user@ethereal.email',
-                pass: process.env.EMAIL_PASS || 'ethereal_pass'
-            }
-        });
-        
-        // Basis-URL bestimmen
-        const baseUrl = process.env.BASE_URL || `http://localhost:${process.env.PORT || 5000}`;
-        
-        // Verifizierungs-URL erstellen
-        const verificationUrl = `${baseUrl}/api/users/verify/${token}`;
-        
-        // E-Mail-Inhalt vorbereiten
-        const mailOptions = {
-            from: process.env.EMAIL_FROM || '"Herobrine AFK Bot" <noreply@herobrine-bot.de>',
-            to: email,
-            subject: 'Bestätige dein Herobrine AFK Bot Konto',
-            html: `
-                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">
-                    <h2 style="color: #333; text-align: center;">Willkommen bei Herobrine AFK Bot!</h2>
-                    <p>Hallo <strong>${username}</strong>,</p>
-                    <p>vielen Dank für deine Registrierung! Um dein Konto zu aktivieren, klicke bitte auf den folgenden Link:</p>
-                    <p style="text-align: center;">
-                        <a href="${verificationUrl}" style="display: inline-block; padding: 10px 20px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px;">Konto aktivieren</a>
-                    </p>
-                    <p>Alternativ kannst du auch diesen Link in deinen Browser kopieren:</p>
-                    <p style="background-color: #f5f5f5; padding: 10px; border-radius: 3px; word-break: break-all;">
-                        ${verificationUrl}
-                    </p>
-                    <p>Dieser Link ist 24 Stunden gültig.</p>
-                    <p>Falls du diese E-Mail nicht angefordert hast, kannst du sie einfach ignorieren.</p>
-                    <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 20px 0;" />
-                    <p style="color: #777; font-size: 12px; text-align: center;">
-                        Dies ist eine automatisch generierte E-Mail. Bitte antworte nicht auf diese Nachricht.
-                    </p>
-                </div>
-            `
-        };
-        
-        // In der Entwicklungsumgebung einfach Link ausgeben, keine echte E-Mail senden
-        if (process.env.NODE_ENV !== 'production') {
-            console.log('| ------------ ENTWICKLUNGSMODUS --------------|');
-            console.log('| Aktivierungs-Link (nur in der Entwicklung):  |');
-            console.log(`| ${verificationUrl}`);
-            console.log('|----------------------------------------------|');
-            return { 
-                success: true, 
-                verificationUrl, // Nur im Entwicklungsmodus zurückgeben
-                message: 'Verifizierungslink wurde generiert (Entwicklungsmodus)'
-            };
-        }
-        
-        // In der Produktion E-Mail senden
-        const info = await transporter.sendMail(mailOptions);
-        console.log('Verifizierungs-E-Mail gesendet:', info.messageId);
-        
-        return { 
-            success: true,
-            message: 'Verifizierungs-E-Mail wurde gesendet' 
-        };
-    } catch (error) {
-        console.error('Fehler beim Senden der Verifizierungs-E-Mail:', error);
-        return { 
-            success: false, 
-            error: 'E-Mail konnte nicht gesendet werden'
-        };
-    }
-}
-
-// Benutzerdaten abrufen
-async function getUserData(userId) {
+    // In einer echten Anwendung würde hier eine E-Mail über einen Dienst wie SendGrid gesendet werden
     return new Promise((resolve) => {
-        console.log(`Abfrage der Benutzerdaten für UserID: ${userId}`);
-        
-        // Datenbank lesen
-        const db = readDatabase();
-        
-        // Benutzer in der Datenbank suchen
-        let foundUser = null;
-        
-        for (const email in db.users) {
-            if (db.users[email].uid === userId) {
-                foundUser = db.users[email];
-                break;
-            }
-        }
-        
-        if (foundUser) {
-            resolve({
-                success: true,
-                user: {
-                    uid: foundUser.uid,
-                    email: foundUser.email,
-                    username: foundUser.username,
-                    verified: foundUser.verified
-                }
-            });
-        } else {
-            // Benutzer nicht gefunden
-            resolve({
-                success: false,
-                error: "Benutzer nicht gefunden"
-            });
-        }
-    });
-}
-
-// Passwort zurücksetzen
-async function sendPasswordResetEmail(email) {
-    console.log(`Passwort-Reset-E-Mail wird vorbereitet für: ${email}`);
-    
-    try {
-        // Datenbank einlesen
-        const db = readDatabase();
-        
-        // Prüfen, ob Benutzer existiert
-        if (!db.users || !db.users[email]) {
-            console.log(`Benutzer mit E-Mail ${email} existiert nicht`);
-            // Erfolg trotzdem melden, um keine Informationen preiszugeben
-            return { 
-                success: true, 
-                message: 'Falls ein Konto mit dieser E-Mail existiert, wurde eine Anleitung zum Zurücksetzen des Passworts gesendet'
-            };
-        }
-        
-        const user = db.users[email];
-        
-        // Hilfsfunktionen für E-Mail-Versand und Token
-        const nodemailer = require('nodemailer');
-        const { v4: uuidv4 } = require('uuid');
-        
-        // Reset-Token erstellen
-        const token = uuidv4();
-        const now = Date.now();
-        
-        // Token in der Datenbank speichern
-        db.password_resets = db.password_resets || {};
-        db.password_resets[token] = {
-            email,
-            timestamp: now,
-            expires: now + (24 * 60 * 60 * 1000) // 24 Stunden gültig
-        };
-        
-        // Datenbank aktualisieren
-        writeDatabase(db);
-        
-        // Verwende lokalen Testserver für E-Mail (im Entwicklungsmodus)
-        const transporter = nodemailer.createTransport({
-            host: 'smtp.ethereal.email',
-            port: 587,
-            auth: {
-                user: process.env.EMAIL_USER || 'ethereal.user@ethereal.email',
-                pass: process.env.EMAIL_PASS || 'ethereal_pass'
-            }
-        });
-        
-        // Basis-URL bestimmen
-        const baseUrl = process.env.BASE_URL || `http://localhost:${process.env.PORT || 5000}`;
-        
-        // Reset-URL erstellen
-        const resetUrl = `${baseUrl}/reset-password.html?token=${token}`;
-        
-        // E-Mail-Inhalt vorbereiten
-        const mailOptions = {
-            from: process.env.EMAIL_FROM || '"Herobrine AFK Bot" <noreply@herobrine-bot.de>',
-            to: email,
-            subject: 'Passwort zurücksetzen für Herobrine AFK Bot',
-            html: `
-                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">
-                    <h2 style="color: #333; text-align: center;">Passwort zurücksetzen</h2>
-                    <p>Hallo <strong>${user.username}</strong>,</p>
-                    <p>wir haben eine Anfrage zum Zurücksetzen deines Passworts erhalten. Klicke auf den folgenden Link, um ein neues Passwort zu erstellen:</p>
-                    <p style="text-align: center;">
-                        <a href="${resetUrl}" style="display: inline-block; padding: 10px 20px; background-color: #4285f4; color: white; text-decoration: none; border-radius: 5px;">Passwort zurücksetzen</a>
-                    </p>
-                    <p>Alternativ kannst du auch diesen Link in deinen Browser kopieren:</p>
-                    <p style="background-color: #f5f5f5; padding: 10px; border-radius: 3px; word-break: break-all;">
-                        ${resetUrl}
-                    </p>
-                    <p>Dieser Link ist 24 Stunden gültig.</p>
-                    <p>Falls du kein neues Passwort angefordert hast, kannst du diese E-Mail ignorieren. Dein Passwort bleibt unverändert.</p>
-                    <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 20px 0;" />
-                    <p style="color: #777; font-size: 12px; text-align: center;">
-                        Dies ist eine automatisch generierte E-Mail. Bitte antworte nicht auf diese Nachricht.
-                    </p>
-                </div>
-            `
-        };
-        
-        // In der Entwicklungsumgebung einfach Link ausgeben, keine echte E-Mail senden
-        if (process.env.NODE_ENV !== 'production') {
-            console.log('| ------------ ENTWICKLUNGSMODUS --------------|');
-            console.log('| Passwort-Reset Link (nur in der Entwicklung): |');
-            console.log(`| ${resetUrl}`);
-            console.log('|----------------------------------------------|');
-            return { 
-                success: true,
-                resetUrl, // Nur im Entwicklungsmodus zurückgeben 
-                message: 'Passwort-Reset Link wurde generiert (Entwicklungsmodus)'
-            };
-        }
-        
-        // In der Produktion E-Mail senden
-        const info = await transporter.sendMail(mailOptions);
-        console.log('Passwort-Reset-E-Mail gesendet:', info.messageId);
-        
-        return { 
-            success: true, 
-            message: 'Falls ein Konto mit dieser E-Mail existiert, wurde eine Anleitung zum Zurücksetzen des Passworts gesendet'
-        };
-    } catch (error) {
-        console.error('Fehler beim Senden der Passwort-Reset-E-Mail:', error);
-        return { 
-            success: false, 
-            error: 'Es ist ein Fehler aufgetreten. Bitte versuche es später erneut.'
-        };
-    }
-}
-
-// Passwort aktualisieren
-async function updatePassword(email, newPassword) {
-    return new Promise(async (resolve) => {
-        try {
-            // Datenbank lesen
-            const db = readDatabase();
+        // Simuliere eine Verzögerung von 1 Sekunde
+        setTimeout(() => {
+            console.log(`Bestätigungs-E-Mail an ${email} gesendet!`);
             
-            // Prüfen, ob Benutzer existiert
-            if (db.users && db.users[email]) {
-                // Passwort direkt im Klartext speichern
-                db.users[email].password = newPassword;
-                db.users[email].password_updated = new Date().toISOString();
-                
-                // Datenbank speichern
-                writeDatabase(db);
-                
-                resolve({ success: true });
-            } else {
-                // Benutzer nicht gefunden
-                resolve({
-                    success: false,
-                    error: "Benutzer nicht gefunden"
-                });
+            // Für Testzwecke: Benutzer automatisch bestätigen
+            const user = db.users.find(user => user.uid === userId);
+            if (user) {
+                user.verified = true;
+                writeDatabase();
+                console.log(`Benutzer ${username} automatisch bestätigt (nur für Testzwecke)`);
             }
-        } catch (error) {
-            console.error('Fehler beim Aktualisieren des Passworts:', error);
-            resolve({
-                success: false,
-                error: "Interner Serverfehler beim Aktualisieren des Passworts"
-            });
-        }
+            
+            resolve(true);
+        }, 1000);
     });
 }
 
-module.exports = {
+/**
+ * Gibt die Daten eines Benutzers zurück
+ * @param {string} userId - ID des Benutzers
+ * @returns {Object|null} - Benutzerdaten oder null, wenn nicht gefunden
+ */
+async function getUserData(userId) {
+    const user = db.users.find(user => user.uid === userId);
+    
+    if (!user) {
+        return null;
+    }
+    
+    // Sensible Daten entfernen
+    const { password, ...userData } = user;
+    
+    // Bots des Benutzers ermitteln
+    const userBots = db.bots.filter(bot => bot.user_id === userId);
+    
+    return {
+        ...userData,
+        bots: userBots
+    };
+}
+
+/**
+ * Sendet eine E-Mail zum Zurücksetzen des Passworts
+ * @param {string} email - E-Mail-Adresse des Benutzers
+ * @returns {Promise<Object>} - Ergebnis des Vorgangs
+ */
+async function sendPasswordResetEmail(email) {
+    // Benutzer in der Datenbank suchen
+    const user = db.users.find(user => user.email === email);
+    
+    // Prüfen, ob der Benutzer existiert
+    if (!user) {
+        return { success: false, error: 'Benutzer nicht gefunden' };
+    }
+    
+    console.log(`Sende Passwort-Reset-E-Mail an ${email} (${user.username})...`);
+    
+    // In einer echten Anwendung würde hier eine E-Mail über einen Dienst wie SendGrid gesendet werden
+    return new Promise((resolve) => {
+        // Simuliere eine Verzögerung von 1 Sekunde
+        setTimeout(() => {
+            console.log(`Passwort-Reset-E-Mail an ${email} gesendet!`);
+            
+            resolve({
+                success: true,
+                message: 'Eine E-Mail zum Zurücksetzen des Passworts wurde gesendet.'
+            });
+        }, 1000);
+    });
+}
+
+/**
+ * Aktualisiert das Passwort eines Benutzers
+ * @param {string} email - E-Mail-Adresse des Benutzers
+ * @param {string} newPassword - Neues Passwort
+ * @returns {Promise<Object>} - Ergebnis des Vorgangs
+ */
+async function updatePassword(email, newPassword) {
+    // Benutzer in der Datenbank suchen
+    const user = db.users.find(user => user.email === email);
+    
+    // Prüfen, ob der Benutzer existiert
+    if (!user) {
+        return { success: false, error: 'Benutzer nicht gefunden' };
+    }
+    
+    // Passwort aktualisieren
+    user.password = newPassword; // In einer echten Anwendung würde dies gehasht werden
+    writeDatabase();
+    
+    return {
+        success: true,
+        message: 'Passwort erfolgreich aktualisiert'
+    };
+}
+
+// Exportiere die Funktionen
+export {
     initializeDatabase,
-    readDatabase,
-    writeDatabase,
     registerUser,
     loginUser,
     sendVerificationEmail,
