@@ -1,197 +1,295 @@
-// Import der Datenbankfunktionen
-import { initializeDatabase, registerUser, loginUser, sendVerificationEmail } from './database.js';
-
-// Datenbank initialisieren
-initializeDatabase();
-
-// DOM-Elemente
-const loginTab = document.getElementById('login-tab');
-const registerTab = document.getElementById('register-tab');
-const loginForm = document.getElementById('login-form');
-const registerForm = document.getElementById('register-form');
-const loginButton = document.getElementById('login-btn');
-const registerButton = document.getElementById('register-btn');
-
-// Event-Listener für Tab-Wechsel
-loginTab.addEventListener('click', () => {
-    loginTab.classList.add('active');
-    registerTab.classList.remove('active');
-    loginForm.style.display = 'block';
-    registerForm.style.display = 'none';
+// Beim Laden der Seite prüfen, ob der Benutzer ein Admin ist
+document.addEventListener('DOMContentLoaded', () => {
+    checkAdminAccess();
+    setupTabNavigation();
 });
 
-registerTab.addEventListener('click', () => {
-    registerTab.classList.add('active');
-    loginTab.classList.remove('active');
-    registerForm.style.display = 'block';
-    loginForm.style.display = 'none';
-});
-
-// Funktion zum Erstellen von Statusnachrichten
-function createStatusMessage(message, isError = false) {
-    const statusDiv = document.createElement('div');
-    statusDiv.classList.add('status-message');
-    statusDiv.classList.add(isError ? 'error' : 'success');
-    statusDiv.textContent = message;
-    return statusDiv;
+// Admin/Console Tab-Navigation einrichten
+function setupTabNavigation() {
+    const adminPanelTab = document.getElementById('admin-panel-tab');
+    const consoleTab = document.getElementById('console-tab');
+    const adminPanelContent = document.getElementById('admin-panel-content');
+    const consolePanelContent = document.getElementById('console-panel-content');
+    
+    // Admin-Panel Tab Click-Event
+    adminPanelTab.addEventListener('click', () => {
+        adminPanelTab.classList.add('active');
+        consoleTab.classList.remove('active');
+        adminPanelContent.classList.add('active');
+        adminPanelContent.style.display = 'block';
+        consolePanelContent.classList.remove('active');
+        consolePanelContent.style.display = 'none';
+    });
+    
+    // Console Tab Click-Event
+    consoleTab.addEventListener('click', () => {
+        consoleTab.classList.add('active');
+        adminPanelTab.classList.remove('active');
+        consolePanelContent.classList.add('active');
+        consolePanelContent.style.display = 'block';
+        adminPanelContent.classList.remove('active');
+        adminPanelContent.style.display = 'none';
+    });
 }
 
-// Funktion zum Löschen aller Statusnachrichten
-function clearStatusMessages(formElement) {
-    const messages = formElement.querySelectorAll('.status-message');
-    messages.forEach(msg => msg.remove());
-}
-
-// Event-Listener für Registrierungsformular
-registerForm.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    clearStatusMessages(registerForm);
-    
-    // Formulardaten abrufen
-    const username = registerForm.querySelector('input[type="text"]').value;
-    const email = registerForm.querySelector('input[type="email"]').value;
-    const password = registerForm.querySelectorAll('input[type="password"]')[0].value;
-    const confirmPassword = registerForm.querySelectorAll('input[type="password"]')[1].value;
-    
-    // Einfache Validierung
-    if (password !== confirmPassword) {
-        const errorMsg = createStatusMessage('Passwörter stimmen nicht überein!', true);
-        registerForm.appendChild(errorMsg);
-        return;
-    }
-    
+// Admin-Zugriff überprüfen
+async function checkAdminAccess() {
     try {
-        // Benutzer registrieren
-        registerButton.disabled = true;
-        registerButton.textContent = 'Registriere...';
+        // Überprüfen, ob der Benutzer im localStorage gespeichert ist
+        const username = localStorage.getItem('username');
+        const userEmail = localStorage.getItem('userEmail');
         
-        const result = await registerUser(email, password, username);
-        
-        if (result.success) {
-            // Status-Nachricht anzeigen
-            const processingMsg = createStatusMessage('Registrierung erfolgreich! Sende Verifizierungs-E-Mail...');
-            registerForm.appendChild(processingMsg);
-            
-            console.log("Registrierung erfolgreich. Sende Verifizierungs-E-Mail...");
-            console.log("User-Objekt:", result.user);
-            
-            // E-Mail-Verifizierung über Backend senden
-            try {
-                const userId = result.user?.uid || username;
-                const emailResult = await sendEmailDirectly(email, username);
-                
-                if (emailResult.success) {
-                    // Alte Statusnachricht entfernen und neue hinzufügen
-                    clearStatusMessages(registerForm);
-                    const successMsg = createStatusMessage('Verifizierungs-E-Mail wurde an ' + email + ' gesendet! Bitte überprüfe deinen Posteingang und klicke auf den Verifizierungslink.');
-                    registerForm.appendChild(successMsg);
-                    
-                    // Formular zurücksetzen nach kurzer Verzögerung
-                    setTimeout(() => {
-                        registerForm.reset();
-                    }, 3000);
-                } else {
-                    clearStatusMessages(registerForm);
-                    const errorMsg = createStatusMessage('E-Mail konnte nicht gesendet werden: ' + (emailResult.error || 'Unbekannter Fehler'), true);
-                    registerForm.appendChild(errorMsg);
-                }
-            } catch (emailError) {
-                console.error('Fehler beim Senden der E-Mail:', emailError);
-                clearStatusMessages(registerForm);
-                const errorMsg = createStatusMessage('Fehler beim Senden der E-Mail: ' + emailError.message, true);
-                registerForm.appendChild(errorMsg);
-            }
-        } else {
-            const errorMsg = createStatusMessage('Registrierung fehlgeschlagen: ' + (result.error || 'Unbekannter Fehler'), true);
-            registerForm.appendChild(errorMsg);
+        if (!username || !userEmail) {
+            redirectToLogin('Du musst dich zuerst anmelden');
+            return;
         }
-    } catch (error) {
-        console.error('Registrierungsfehler:', error);
-        const errorMsg = createStatusMessage('Ein Fehler ist aufgetreten: ' + error.message, true);
-        registerForm.appendChild(errorMsg);
-    } finally {
-        registerButton.disabled = false;
-        registerButton.textContent = 'Register';
-    }
-});
-
-// Event-Listener für Login-Formular
-loginForm.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    clearStatusMessages(loginForm);
-    
-    // Formulardaten abrufen
-    const email = loginForm.querySelector('input[type="email"]').value;
-    const password = loginForm.querySelector('input[type="password"]').value;
-    
-    try {
-        // Benutzer anmelden
-        loginButton.disabled = true;
-        loginButton.textContent = 'Anmeldung...';
         
-        const result = await loginUser(email, password);
-        
-        if (result.success) {
-            const successMsg = createStatusMessage('Anmeldung erfolgreich! Weiterleitung...');
-            loginForm.appendChild(successMsg);
-            
-            // Benutzernamen aus dem Result nehmen oder aus der E-Mail extrahieren
-            const username = result.user?.username || email.split('@')[0];
-            
-            // Benutzernamen im localStorage speichern für die Dashboard-Seite
-            localStorage.setItem('username', username);
-            
-            // Weiterleitung zum Dashboard
-            setTimeout(() => {
-                window.location.href = 'dashboard.html';
-            }, 1500);
-        } else if (result.pendingApproval) {
-            // Wenn Admin-Login eine Bestätigung erfordert
-            const infoMsg = createStatusMessage(result.message || 'Für Admin-Logins ist eine E-Mail-Bestätigung erforderlich. Bitte warte auf die Bestätigungsmail.', false);
-            loginForm.appendChild(infoMsg);
-        } else {
-            const errorMsg = createStatusMessage('Anmeldung fehlgeschlagen: ' + (result.error || 'Ungültige Anmeldedaten'), true);
-            loginForm.appendChild(errorMsg);
-        }
-    } catch (error) {
-        console.error('Anmeldefehler:', error);
-        const errorMsg = createStatusMessage('Ein Fehler ist aufgetreten: ' + error.message, true);
-        loginForm.appendChild(errorMsg);
-    } finally {
-        loginButton.disabled = false;
-        loginButton.textContent = 'Login';
-    }
-});
-
-// Funktion zum direkten Versenden von E-Mails über Backend
-async function sendEmailDirectly(toEmail, username) {
-    console.log(`Sende E-Mail an: ${toEmail} für Benutzer: ${username}`);
-    
-    try {
-        // API-Aufruf an unseren Backend-Server
-        const response = await fetch('/send-verification-email', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                email: toEmail,
-                username: username,
-                userId: username // In einer echten App würde hier eine UUID verwendet werden
-            })
-        });
-        
+        // Benutzer aus dem Server abrufen
+        const response = await fetch(`/api/users/get-by-email?email=${encodeURIComponent(userEmail)}`);
         const data = await response.json();
         
-        if (data.success) {
-            console.log("E-Mail erfolgreich gesendet");
-            return { success: true };
-        } else {
-            console.error("E-Mail konnte nicht gesendet werden:", data.error);
-            return { success: false, error: data.error || "E-Mail konnte nicht gesendet werden" };
+        if (!data.success || !data.user || data.user.role !== 'admin') {
+            redirectToLogin('Du hast keinen Zugriff auf den Administratorbereich');
+            return;
         }
+        
+        // Admin-Bereich anzeigen
+        document.getElementById('admin-username').textContent = username;
+        loadDashboardData();
+        
     } catch (error) {
-        console.error("Fehler beim Senden der E-Mail:", error);
-        return { success: false, error: "E-Mail konnte nicht gesendet werden" };
+        console.error('Fehler beim Überprüfen des Admin-Zugriffs:', error);
+        redirectToLogin('Ein Fehler ist aufgetreten. Bitte versuche es erneut.');
     }
 }
+
+// Weiterleitung zur Login-Seite
+function redirectToLogin(message) {
+    alert(message);
+    window.location.href = 'index.html';
+}
+
+// Daten für das Dashboard laden
+async function loadDashboardData() {
+    try {
+        const userEmail = localStorage.getItem('userEmail');
+        
+        // Statistiken laden
+        const statsResponse = await fetch(`/api/admin/stats?admin_email=${encodeURIComponent(userEmail)}`);
+        const statsData = await statsResponse.json();
+        
+        if (statsData.success) {
+            document.getElementById('user-count').textContent = statsData.stats.userCount || '0';
+            document.getElementById('active-bots').textContent = statsData.stats.activeBots || '0';
+            document.getElementById('server-uptime').textContent = statsData.stats.uptime || '0h';
+            document.getElementById('logins-today').textContent = statsData.stats.loginsToday || '0';
+        }
+        
+        // Benutzerliste laden
+        const usersResponse = await fetch(`/api/admin/users?admin_email=${encodeURIComponent(userEmail)}`);
+        const usersData = await usersResponse.json();
+        
+        if (usersData.success) {
+            renderUserList(usersData.users);
+            // Event-Listener für Benutzeraktionen hinzufügen
+            addUserActionListeners();
+        }
+        
+        // Login-Logs laden
+        const logsResponse = await fetch(`/api/admin/logs?admin_email=${encodeURIComponent(userEmail)}`);
+        const logsData = await logsResponse.json();
+        
+        if (logsData.success) {
+            renderLogs(logsData.logs);
+        }
+        
+    } catch (error) {
+        console.error('Fehler beim Laden der Dashboard-Daten:', error);
+        alert('Fehler beim Laden der Dashboard-Daten. Bitte aktualisiere die Seite.');
+    }
+}
+
+// Event-Listener für Benutzeraktionen hinzufügen
+function addUserActionListeners() {
+    const userEmail = localStorage.getItem('userEmail');
+    
+    // Event-Listener für Verifizierungsschaltflächen
+    document.querySelectorAll('.verify-btn:not([disabled])').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            const targetEmail = btn.getAttribute('data-email');
+            
+            try {
+                const response = await fetch('/api/admin/verify-user', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        admin_email: userEmail,
+                        user_email: targetEmail
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert(data.message);
+                    loadDashboardData(); // Dashboard aktualisieren
+                } else {
+                    alert('Fehler: ' + (data.error || 'Unbekannter Fehler'));
+                }
+            } catch (error) {
+                console.error('Fehler beim Verifizieren des Benutzers:', error);
+                alert('Ein Fehler ist aufgetreten. Bitte versuche es erneut.');
+            }
+        });
+    });
+    
+    // Event-Listener für Sperr-/Entsperrschaltflächen
+    document.querySelectorAll('.ban-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            const targetEmail = btn.getAttribute('data-email');
+            const isBanned = btn.classList.contains('active');
+            
+            // Wenn der Benutzer gesperrt werden soll, nach einem Grund fragen
+            let banReason = '';
+            if (!isBanned) {
+                banReason = prompt('Gib bitte einen Grund für die Sperrung ein:');
+                if (banReason === null) return; // Benutzer hat abgebrochen
+            }
+            
+            try {
+                const response = await fetch('/api/admin/toggle-ban', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        admin_email: userEmail,
+                        user_email: targetEmail,
+                        ban_status: !isBanned,
+                        ban_reason: banReason
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert(data.message);
+                    loadDashboardData(); // Dashboard aktualisieren
+                } else {
+                    alert('Fehler: ' + (data.error || 'Unbekannter Fehler'));
+                }
+            } catch (error) {
+                console.error('Fehler beim Ändern des Sperrstatus:', error);
+                alert('Ein Fehler ist aufgetreten. Bitte versuche es erneut.');
+            }
+        });
+    });
+}
+
+// Benutzerliste rendern
+function renderUserList(users) {
+    const userList = document.getElementById('user-list');
+    userList.innerHTML = '';
+    
+    // Mit echten Benutzerdaten arbeiten
+    users.forEach(user => {
+        const userItem = document.createElement('div');
+        userItem.className = 'user-item';
+        
+        // Banngrund-Text erstellen, wenn der Benutzer gesperrt ist
+        const banReasonText = user.banned && user.ban_reason 
+            ? `<div style="font-size: 0.8rem; color: #ff3838;">Grund: ${user.ban_reason}</div>` 
+            : '';
+        
+        userItem.innerHTML = `
+            <div class="user-info">
+                <strong>${user.username}</strong> (${user.email})
+                <div style="font-size: 0.8rem; color: #a0a0a0;">
+                    Rolle: ${user.role === 'admin' ? 'Administrator' : 'Benutzer'} | 
+                    Status: ${user.verified ? 'Verifiziert' : 'Nicht verifiziert'}
+                    ${user.banned ? ' | <span style="color: #ff3838;">Gesperrt</span>' : ''}
+                </div>
+                ${banReasonText}
+            </div>
+            <div class="user-actions">
+                <button class="verify-btn" data-email="${user.email}" ${user.verified ? 'disabled' : ''}>
+                    ${user.verified ? 'Verifiziert' : 'Verifizieren'}
+                </button>
+                <button class="ban-btn ${user.banned ? 'active' : ''}" data-email="${user.email}">
+                    ${user.banned ? 'Entsperren' : 'Sperren'}
+                </button>
+            </div>
+        `;
+        userList.appendChild(userItem);
+    });
+}
+
+// Logs rendern
+function renderLogs(logs) {
+    const logsList = document.getElementById('login-logs');
+    logsList.innerHTML = '';
+    
+    // Echte Logs anzeigen
+    if (logs && logs.length > 0) {
+        logs.forEach(log => {
+            const logItem = document.createElement('div');
+            logItem.className = 'log-item';
+            logItem.innerHTML = `
+                <strong>${log.date}</strong> - Benutzer <span>${log.username}</span> hat sich angemeldet
+                ${log.ip ? `<div style="font-size: 0.8rem; color: #777;">IP: ${log.ip}</div>` : ''}
+            `;
+            logsList.appendChild(logItem);
+        });
+    } else {
+        // Fallback, wenn keine Logs vorhanden sind
+        logsList.innerHTML = '<div class="log-item">Keine Login-Protokolle vorhanden</div>';
+    }
+}
+
+// Tab-Wechsel-Funktion
+document.querySelectorAll('.tab-button').forEach(button => {
+    button.addEventListener('click', () => {
+        // Alle Tabs deaktivieren
+        document.querySelectorAll('.tab-button').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        
+        // Alle Tab-Inhalte ausblenden
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.style.display = 'none';
+        });
+        
+        // Angeklickten Tab aktivieren
+        button.classList.add('active');
+        
+        // Entsprechenden Tab-Inhalt anzeigen
+        const tabId = button.getAttribute('data-tab');
+        document.getElementById(tabId).style.display = 'flex';
+        
+        // Bot-Tab-Daten laden, wenn Bot-Tab geöffnet wird
+        if (tabId === 'bot-tab') {
+            loadBotData();
+        }
+    });
+});
+
+// Bot-Daten laden (für den Bot-Tab)
+function loadBotData() {
+    // Simulierte Daten für die Demonstration
+    document.getElementById('total-bots').textContent = '5';
+    document.getElementById('connected-bots').textContent = '2';
+    document.getElementById('servers-count').textContent = '2';
+    document.getElementById('total-uptime').textContent = '24h';
+    
+    // In einer echten Anwendung würden wir hier Daten vom Server laden
+}
+
+// Abmelden-Link
+document.getElementById('logout-link').addEventListener('click', (e) => {
+    e.preventDefault();
+    localStorage.removeItem('username');
+    localStorage.removeItem('userEmail');
+    window.location.href = 'index.html';
+});
