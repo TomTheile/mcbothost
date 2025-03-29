@@ -3,10 +3,543 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Herobrine AFK Bot - Dashboard</title>
+    <title>Dashboard - Herobrine AFK Bot</title>
     <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="dashboard.css">
-    <link rel="stylesheet" href="admin.css">
+    <style>
+        .dashboard-container {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            min-height: calc(100vh - 150px);
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            background-color: rgba(0, 0, 0, 0.7);
+            border-right: 1px solid #333;
+            padding: 20px 0;
+        }
+        
+        .user-profile {
+            display: flex;
+            align-items: center;
+            padding: 0 20px 20px;
+            border-bottom: 1px solid #333;
+            margin-bottom: 20px;
+        }
+        
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: #1eff00;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-weight: bold;
+            color: #000;
+        }
+        
+        .user-info h3 {
+            color: #1eff00;
+            margin: 0;
+            font-size: 1.1rem;
+        }
+        
+        .user-info p {
+            color: #a0a0a0;
+            margin: 5px 0 0;
+            font-size: 0.85rem;
+        }
+        
+        .nav-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .nav-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            color: #e0e0e0;
+            transition: all 0.3s;
+            border-left: 3px solid transparent;
+            display: flex;
+            align-items: center;
+        }
+        
+        .nav-item.active {
+            background-color: rgba(30, 255, 0, 0.1);
+            color: #1eff00;
+            border-left-color: #1eff00;
+        }
+        
+        .nav-item:hover:not(.active) {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+        
+        .nav-icon {
+            margin-right: 10px;
+            font-size: 1.2rem;
+            width: 20px;
+            text-align: center;
+        }
+        
+        /* Main Content */
+        .main-content {
+            padding: 20px;
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+        
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #333;
+        }
+        
+        .dashboard-header h2 {
+            color: #1eff00;
+            margin: 0;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .action-btn {
+            background-color: #1eff00;
+            color: #000;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        
+        .action-btn:hover {
+            background-color: #19cc00;
+        }
+        
+        .action-btn.secondary {
+            background-color: transparent;
+            border: 1px solid #1eff00;
+            color: #1eff00;
+        }
+        
+        .action-btn.secondary:hover {
+            background-color: rgba(30, 255, 0, 0.1);
+        }
+        
+        /* Overview Cards */
+        .stats-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background-color: rgba(0, 0, 0, 0.6);
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            border-color: #1eff00;
+        }
+        
+        .stat-icon {
+            font-size: 2rem;
+            color: #1eff00;
+            margin-bottom: 15px;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #e0e0e0;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            color: #a0a0a0;
+            font-size: 0.9rem;
+        }
+        
+        /* Bot List */
+        .bot-container {
+            background-color: rgba(0, 0, 0, 0.6);
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .bot-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .bot-header h3 {
+            color: #1eff00;
+            margin: 0;
+        }
+        
+        .bot-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+        }
+        
+        .bot-card {
+            background-color: rgba(0, 0, 0, 0.7);
+            border: 1px solid #333;
+            border-radius: 5px;
+            padding: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .bot-card.online {
+            border-left: 3px solid #1eff00;
+        }
+        
+        .bot-card.offline {
+            border-left: 3px solid #ff5555;
+        }
+        
+        .bot-status {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        
+        .bot-status.online {
+            background-color: #1eff00;
+            box-shadow: 0 0 10px rgba(30, 255, 0, 0.7);
+        }
+        
+        .bot-status.offline {
+            background-color: #ff5555;
+        }
+        
+        .bot-name {
+            color: #e0e0e0;
+            font-weight: bold;
+            margin: 0 0 5px;
+            font-size: 1.1rem;
+        }
+        
+        .bot-server {
+            color: #a0a0a0;
+            margin: 0 0 15px;
+            font-size: 0.9rem;
+        }
+        
+        .bot-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .bot-detail {
+            color: #e0e0e0;
+            font-size: 0.9rem;
+        }
+        
+        .bot-detail span {
+            color: #1eff00;
+            font-weight: bold;
+        }
+        
+        .bot-actions {
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .bot-btn {
+            background: none;
+            border: 1px solid #333;
+            color: #a0a0a0;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.3s;
+            flex: 1;
+            margin: 0 5px;
+            text-align: center;
+        }
+        
+        .bot-btn:first-child {
+            margin-left: 0;
+        }
+        
+        .bot-btn:last-child {
+            margin-right: 0;
+        }
+        
+        .bot-btn:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: #e0e0e0;
+            border-color: #1eff00;
+        }
+        
+        .bot-btn.start {
+            background-color: rgba(30, 255, 0, 0.1);
+            border-color: #1eff00;
+            color: #1eff00;
+        }
+        
+        .bot-btn.start:hover {
+            background-color: #1eff00;
+            color: #000;
+        }
+        
+        .bot-btn.stop {
+            background-color: rgba(255, 85, 85, 0.1);
+            border-color: #ff5555;
+            color: #ff5555;
+        }
+        
+        .bot-btn.stop:hover {
+            background-color: #ff5555;
+            color: #000;
+        }
+        
+        /* Create Bot Form */
+        .create-bot-form {
+            background-color: rgba(0, 0, 0, 0.7);
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .form-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #333;
+        }
+        
+        .form-header h3 {
+            color: #1eff00;
+            margin: 0;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #e0e0e0;
+        }
+        
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            background-color: rgba(0, 0, 0, 0.5);
+            border: 1px solid #333;
+            color: #e0e0e0;
+            border-radius: 5px;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: #1eff00;
+            outline: none;
+        }
+        
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        
+        /* Activity Log */
+        .activity-log {
+            background-color: rgba(0, 0, 0, 0.6);
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        
+        .log-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .log-header h3 {
+            color: #1eff00;
+            margin: 0;
+        }
+        
+        .log-entry {
+            padding: 10px;
+            border-bottom: 1px solid #333;
+            color: #e0e0e0;
+        }
+        
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+        
+        .log-time {
+            font-size: 0.8rem;
+            color: #a0a0a0;
+            margin-right: 10px;
+        }
+        
+        .log-type {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        .log-type.info {
+            background-color: rgba(0, 150, 255, 0.2);
+            color: #00c3ff;
+        }
+        
+        .log-type.success {
+            background-color: rgba(0, 255, 0, 0.2);
+            color: #1eff00;
+        }
+        
+        .log-type.error {
+            background-color: rgba(255, 0, 0, 0.2);
+            color: #ff5555;
+        }
+        
+        .log-message {
+            font-size: 0.9rem;
+        }
+        
+        /* Dialog/Modal for settings */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            overflow: auto;
+        }
+        
+        .modal-content {
+            background-color: #1a1a1a;
+            margin: 10% auto;
+            padding: 20px;
+            border: 1px solid #333;
+            border-radius: 8px;
+            max-width: 600px;
+            animation: modalSlideIn 0.3s;
+        }
+        
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #333;
+        }
+        
+        .modal-header h3 {
+            color: #1eff00;
+            margin: 0;
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            color: #a0a0a0;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        
+        .close-modal:hover {
+            color: #e0e0e0;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .dashboard-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                bottom: 0;
+                width: 250px;
+                z-index: 100;
+            }
+            
+            .sidebar.active {
+                display: block;
+            }
+            
+            .mobile-toggle {
+                display: block;
+                background: none;
+                border: none;
+                color: #1eff00;
+                font-size: 1.5rem;
+                cursor: pointer;
+            }
+        }
+        
+        @media (min-width: 769px) {
+            .mobile-toggle {
+                display: none;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -14,98 +547,239 @@
         <div class="header">
             <h1>Herobrine AFK Bot</h1>
             <div class="quick-links">
-                <a href="index.html">Abmelden</a>
-                <a href="#">Einstellungen</a>
+                <a href="#" id="logout-link" onclick="logout()">Abmelden</a>
+                <a href="#">Hilfe</a>
             </div>
         </div>
 
-        <div class="main-content">
-            <!-- Bot Control Panel -->
-            <div class="control-panel green-border">
-                <h2>Bot-Steuerung</h2>
-                <div class="user-info">
-                    <p>Willkommen, <span id="username">Benutzer</span>!</p>
-                    <p>Status: <span id="bot-status" class="status-offline">Offline</span></p>
-                </div>
-
-                <div class="server-form">
-                    <div class="form-group">
-                        <label>Minecraft Server IP</label>
-                        <input type="text" id="server-ip" placeholder="z.B. play.hypixel.net">
-                    </div>
-                    <div class="form-group">
-                        <label>Bot Name</label>
-                        <input type="text" id="bot-name" placeholder="Gib deinem Bot einen Namen">
-                    </div>
-                    <div class="form-group">
-                        <label>Minecraft Version</label>
-                        <select id="mc-version">
-                            <option value="1.8">1.8</option>
-                            <option value="1.12">1.12</option>
-                            <option value="1.16">1.16</option>
-                            <option value="1.17">1.17</option>
-                            <option value="1.18">1.18</option>
-                            <option value="1.19">1.19</option>
-                            <option value="1.20">1.20</option>
-                            <option value="1.21" selected>1.21.4 (empfohlen)</option>
-                        </select>
-                    </div>
-                    <div class="action-buttons">
-                        <button class="action-btn start-btn" id="start-bot">Bot starten</button>
-                        <button class="action-btn stop-btn" id="stop-bot" disabled>Bot stoppen</button>
+        <div class="dashboard-container">
+            <!-- Sidebar (Left) -->
+            <div class="sidebar">
+                <div class="user-profile">
+                    <div class="user-avatar" id="user-initials">U</div>
+                    <div class="user-info">
+                        <h3 id="username-display">Benutzername</h3>
+                        <p>Standard-Konto</p>
                     </div>
                 </div>
+                
+                <ul class="nav-menu">
+                    <li class="nav-item active" data-page="dashboard">
+                        <span class="nav-icon">📊</span> Dashboard
+                    </li>
+                    <li class="nav-item" data-page="bots">
+                        <span class="nav-icon">🤖</span> Meine Bots
+                    </li>
+                    <li class="nav-item" data-page="settings">
+                        <span class="nav-icon">⚙️</span> Einstellungen
+                    </li>
+                    <li class="nav-item admin-only" data-page="admin">
+                        <span class="nav-icon">🔑</span> Admin-Bereich
+                    </li>
+                </ul>
             </div>
-
-            <!-- Bot Console -->
-            <div class="bot-console green-border">
-                <div class="console-header">
-                    <h3>Bot Konsole</h3>
-                    <div class="console-controls">
-                        <button class="admin-mode-btn" id="admin-mode-btn" style="display: none;">Admin-Modus</button>
-                        <button class="clear-console" id="clear-console">Löschen</button>
-                    </div>
-                </div>
-                <div class="console-window" id="console-window">
-                    <div class="console-line">System > Willkommen bei der Herobrine AFK Bot Konsole</div>
-                    <div class="console-line">System > Gib eine Minecraft Server IP ein und drücke "Bot starten"</div>
-                </div>
-                <div class="console-input">
-                    <input type="text" id="command-input" placeholder="Befehl eingeben..." disabled>
-                    <button id="send-command" disabled>Senden</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Bot Stats Panel -->
-        <div class="stats-panel green-border">
-            <h3>Bot Statistiken</h3>
-            <div class="stats-grid">
-                <div class="stat-item">
-                    <div class="stat-label">Online Zeit</div>
-                    <div class="stat-value" id="online-time">00:00:00</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-label">Position</div>
-                    <div class="stat-value" id="position">X: 0 Y: 0 Z: 0</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-label">Gesundheit</div>
-                    <div class="stat-value">
-                        <div class="health-bar">
-                            <div class="health-fill" id="health-fill" style="width: 100%;"></div>
+            
+            <!-- Main Content Area (Right) -->
+            <div class="main-content">
+                <!-- Dashboard Page -->
+                <div class="dashboard-page active" id="dashboard-page">
+                    <div class="dashboard-header">
+                        <h2>Dein Dashboard</h2>
+                        <div class="action-buttons">
+                            <button class="action-btn" id="create-bot-btn">Neuen Bot erstellen</button>
+                            <button class="action-btn secondary" id="refresh-dashboard">Aktualisieren</button>
                         </div>
-                        <span id="health-value">20/20</span>
+                    </div>
+                    
+                    <!-- Stats Overview -->
+                    <div class="stats-overview">
+                        <div class="stat-card">
+                            <div class="stat-icon">🤖</div>
+                            <div class="stat-value" id="total-bots">0</div>
+                            <div class="stat-label">Meine Bots</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">⏱️</div>
+                            <div class="stat-value" id="online-time">0h</div>
+                            <div class="stat-label">Gesamte Online-Zeit</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">📡</div>
+                            <div class="stat-value" id="active-bots">0</div>
+                            <div class="stat-label">Aktive Bots</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">📋</div>
+                            <div class="stat-value" id="total-servers">0</div>
+                            <div class="stat-label">Verbundene Server</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Create Bot Form -->
+                    <div class="create-bot-form" id="create-bot-form">
+                        <div class="form-header">
+                            <h3>Neuen Bot erstellen</h3>
+                            <button class="close-modal" id="close-create-form">×</button>
+                        </div>
+                        
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="bot-username">Minecraft-Benutzername</label>
+                                <input type="text" id="bot-username" placeholder="Dein Minecraft-Benutzername" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="bot-server">Server-Adresse</label>
+                                <input type="text" id="bot-server" placeholder="z.B. play.example.com" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="bot-port">Server-Port (Optional)</label>
+                                <input type="number" id="bot-port" placeholder="25565" value="25565">
+                            </div>
+                            <div class="form-group">
+                                <label for="bot-version">Minecraft-Version</label>
+                                <select id="bot-version">
+                                    <option value="1.20.4">1.20.4</option>
+                                    <option value="1.19.4">1.19.4</option>
+                                    <option value="1.18.2">1.18.2</option>
+                                    <option value="1.17.1">1.17.1</option>
+                                    <option value="1.16.5">1.16.5</option>
+                                    <option value="1.12.2">1.12.2</option>
+                                    <option value="1.8.9">1.8.9</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>
+                                    <input type="checkbox" id="bot-auto-reconnect" checked>
+                                    Automatisch neu verbinden
+                                </label>
+                            </div>
+                            <div class="form-group">
+                                <label>
+                                    <input type="checkbox" id="bot-anti-afk" checked>
+                                    Anti-AFK aktivieren
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button class="action-btn secondary" id="cancel-create-bot">Abbrechen</button>
+                            <button class="action-btn" id="submit-create-bot">Bot erstellen</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Bot List -->
+                    <div class="bot-container">
+                        <div class="bot-header">
+                            <h3>Deine Bots</h3>
+                        </div>
+                        
+                        <div class="bot-grid" id="bot-grid">
+                            <!-- Bot cards will be added here dynamically -->
+                            <div class="bot-card online">
+                                <div class="bot-status online"></div>
+                                <h4 class="bot-name">TestBot</h4>
+                                <p class="bot-server">mc.example.com:25565</p>
+                                <div class="bot-details">
+                                    <div class="bot-detail">
+                                        Version: <span>1.20.4</span>
+                                    </div>
+                                    <div class="bot-detail">
+                                        Online seit: <span>2h 15m</span>
+                                    </div>
+                                </div>
+                                <div class="bot-actions">
+                                    <button class="bot-btn">Logs</button>
+                                    <button class="bot-btn">Details</button>
+                                    <button class="bot-btn stop">Stoppen</button>
+                                </div>
+                            </div>
+                            
+                            <div class="bot-card offline">
+                                <div class="bot-status offline"></div>
+                                <h4 class="bot-name">FarmBot</h4>
+                                <p class="bot-server">play.hypixel.net:25565</p>
+                                <div class="bot-details">
+                                    <div class="bot-detail">
+                                        Version: <span>1.8.9</span>
+                                    </div>
+                                    <div class="bot-detail">
+                                        Status: <span>Offline</span>
+                                    </div>
+                                </div>
+                                <div class="bot-actions">
+                                    <button class="bot-btn">Logs</button>
+                                    <button class="bot-btn">Details</button>
+                                    <button class="bot-btn start">Starten</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Activity Log -->
+                    <div class="activity-log">
+                        <div class="log-header">
+                            <h3>Aktivitätsprotokoll</h3>
+                        </div>
+                        
+                        <div id="log-entries">
+                            <!-- Log entries will be added here dynamically -->
+                            <div class="log-entry">
+                                <span class="log-time">19.03.2023 14:32</span>
+                                <span class="log-type success">Erfolg</span>
+                                <span class="log-message">Bot 'TestBot' wurde erfolgreich verbunden.</span>
+                            </div>
+                            <div class="log-entry">
+                                <span class="log-time">19.03.2023 14:30</span>
+                                <span class="log-type info">Info</span>
+                                <span class="log-message">Bot 'TestBot' wird gestartet...</span>
+                            </div>
+                            <div class="log-entry">
+                                <span class="log-time">19.03.2023 14:15</span>
+                                <span class="log-type error">Fehler</span>
+                                <span class="log-message">Bot 'FarmBot' konnte nicht verbinden: Zeitüberschreitung.</span>
+                            </div>
+                            <div class="log-entry">
+                                <span class="log-time">19.03.2023 14:10</span>
+                                <span class="log-type info">Info</span>
+                                <span class="log-message">Bot 'FarmBot' wird gestartet...</span>
+                            </div>
+                            <div class="log-entry">
+                                <span class="log-time">19.03.2023 13:45</span>
+                                <span class="log-type info">Info</span>
+                                <span class="log-message">Anmeldung erfolgreich.</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="stat-item">
-                    <div class="stat-label">Nahrung</div>
-                    <div class="stat-value">
-                        <div class="food-bar">
-                            <div class="food-fill" id="food-fill" style="width: 100%;"></div>
-                        </div>
-                        <span id="food-value">20/20</span>
+                
+                <!-- Bots Page -->
+                <div class="dashboard-page" id="bots-page">
+                    <!-- Bots content will be implemented in the future -->
+                    <div class="dashboard-header">
+                        <h2>Meine Bots</h2>
                     </div>
+                    <p>Ausführlichere Bot-Verwaltung wird in Kürze verfügbar sein.</p>
+                </div>
+                
+                <!-- Settings Page -->
+                <div class="dashboard-page" id="settings-page">
+                    <!-- Settings content will be implemented in the future -->
+                    <div class="dashboard-header">
+                        <h2>Einstellungen</h2>
+                    </div>
+                    <p>Kontoeinstellungen werden in Kürze verfügbar sein.</p>
+                </div>
+                
+                <!-- Admin Page -->
+                <div class="dashboard-page" id="admin-page">
+                    <!-- Admin content is only for administrators -->
+                    <div class="dashboard-header">
+                        <h2>Admin-Bereich</h2>
+                    </div>
+                    <a href="admin.html" class="action-btn">Zum Admin-Dashboard</a>
                 </div>
             </div>
         </div>
@@ -120,53 +794,207 @@
         </div>
     </div>
 
-    <!-- Admin Panel -->
-    <div class="admin-overlay" id="admin-overlay"></div>
-    <div class="admin-panel" id="admin-panel">
-        <div class="admin-header">
-            <h2>Administrator-Bereich</h2>
-            <button class="close-admin" id="close-admin">×</button>
-        </div>
-        <div class="admin-content">
-            <div class="admin-section">
-                <h3>Benutzerverwaltung</h3>
-                <div id="user-list-container">
-                    <p>Benutzer werden geladen...</p>
-                </div>
+    <!-- Bot Details Modal -->
+    <div class="modal" id="bot-details-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Bot-Details</h3>
+                <button class="close-modal" id="close-bot-details">×</button>
             </div>
             
-            <div class="admin-section">
-                <h3>Benutzer verwarnen</h3>
-                <div class="admin-form">
-                    <div class="admin-form-group">
-                        <label for="warn-email">E-Mail des Benutzers:</label>
-                        <input type="email" id="warn-email" placeholder="E-Mail eingeben">
-                    </div>
-                    <div class="admin-form-group">
-                        <label for="warn-reason">Grund der Verwarnung:</label>
-                        <textarea id="warn-reason" placeholder="Grund für die Verwarnung eingeben"></textarea>
-                    </div>
-                    <button class="admin-submit-btn" id="submit-warning">Verwarnung senden</button>
-                </div>
-            </div>
-            
-            <div class="admin-section">
-                <h3>Benutzer sperren</h3>
-                <div class="admin-form">
-                    <div class="admin-form-group">
-                        <label for="ban-email">E-Mail des Benutzers:</label>
-                        <input type="email" id="ban-email" placeholder="E-Mail eingeben">
-                    </div>
-                    <div class="admin-form-group">
-                        <label for="ban-reason">Grund der Sperrung:</label>
-                        <textarea id="ban-reason" placeholder="Grund für die Sperrung eingeben"></textarea>
-                    </div>
-                    <button class="admin-submit-btn" id="submit-ban">Benutzer sperren</button>
-                </div>
+            <div id="bot-details-content">
+                <!-- Bot details will be added here dynamically -->
             </div>
         </div>
     </div>
 
-    <script src="dashboard.js"></script>
+    <!-- Scripts -->
+    <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Authentifizierung überprüfen
+            if (!checkAuthentication()) {
+                return;
+            }
+            
+            // Elemente referenzieren
+            const createBotBtn = document.getElementById('create-bot-btn');
+            const createBotForm = document.getElementById('create-bot-form');
+            const closeCreateForm = document.getElementById('close-create-form');
+            const cancelCreateBot = document.getElementById('cancel-create-bot');
+            const submitCreateBot = document.getElementById('submit-create-bot');
+            const refreshDashboardBtn = document.getElementById('refresh-dashboard');
+            const navItems = document.querySelectorAll('.nav-item');
+            const dashboardPages = document.querySelectorAll('.dashboard-page');
+            
+            // Benutzerinformationen anzeigen
+            const username = localStorage.getItem('username') || 'Benutzer';
+            const userInitials = document.getElementById('user-initials');
+            const usernameDisplay = document.getElementById('username-display');
+            
+            userInitials.textContent = username.charAt(0).toUpperCase();
+            usernameDisplay.textContent = username;
+            
+            // Formular für neuen Bot ausblenden
+            createBotForm.style.display = 'none';
+            
+            // Event-Listener für Schaltflächen
+            createBotBtn.addEventListener('click', function() {
+                createBotForm.style.display = 'block';
+            });
+            
+            closeCreateForm.addEventListener('click', function() {
+                createBotForm.style.display = 'none';
+            });
+            
+            cancelCreateBot.addEventListener('click', function() {
+                createBotForm.style.display = 'none';
+            });
+            
+            submitCreateBot.addEventListener('click', function() {
+                const username = document.getElementById('bot-username').value;
+                const server = document.getElementById('bot-server').value;
+                const port = document.getElementById('bot-port').value;
+                const version = document.getElementById('bot-version').value;
+                const autoReconnect = document.getElementById('bot-auto-reconnect').checked;
+                const antiAFK = document.getElementById('bot-anti-afk').checked;
+                
+                if (!username || !server) {
+                    alert('Bitte gib einen Benutzernamen und eine Server-Adresse ein.');
+                    return;
+                }
+                
+                // API-Anfrage zum Erstellen eines Bots
+                fetch('/api/bots/start', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username,
+                        server,
+                        port: parseInt(port),
+                        version,
+                        autoReconnect,
+                        antiAFK
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Formular zurücksetzen und ausblenden
+                        document.getElementById('bot-username').value = '';
+                        createBotForm.style.display = 'none';
+                        
+                        // Dashboard aktualisieren
+                        refreshDashboard();
+                        
+                        // Toast anzeigen
+                        showToast('Bot wurde erfolgreich erstellt und gestartet!', 'success');
+                    } else {
+                        // Fehler anzeigen
+                        showToast(data.error || 'Fehler beim Erstellen des Bots', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Fehler:', error);
+                    showToast('Serverfehler beim Erstellen des Bots', 'error');
+                });
+            });
+            
+            refreshDashboardBtn.addEventListener('click', refreshDashboard);
+            
+            // Navigation zwischen den Seiten
+            navItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const pageName = this.getAttribute('data-page');
+                    
+                    // Aktive Klasse entfernen
+                    navItems.forEach(navItem => navItem.classList.remove('active'));
+                    
+                    // Aktive Klasse hinzufügen
+                    this.classList.add('active');
+                    
+                    // Alle Seiten ausblenden
+                    dashboardPages.forEach(page => page.classList.remove('active'));
+                    
+                    // Ausgewählte Seite anzeigen
+                    document.getElementById(`${pageName}-page`).classList.add('active');
+                });
+            });
+            
+            // Dashboard beim Laden aktualisieren
+            refreshDashboard();
+            
+            // Periodisches Aktualisieren des Dashboards (alle 30 Sekunden)
+            setInterval(refreshDashboard, 30000);
+        });
+        
+        /**
+         * Dashboard aktualisieren
+         */
+        function refreshDashboard() {
+            // Hier würde in einer echten Anwendung eine API-Anfrage gemacht werden
+            // Für dieses Beispiel simulieren wir Daten
+            
+            // Statistiken aktualisieren
+            document.getElementById('total-bots').textContent = '2';
+            document.getElementById('online-time').textContent = '2h 15m';
+            document.getElementById('active-bots').textContent = '1';
+            document.getElementById('total-servers').textContent = '2';
+            
+            // Hier würden in einer echten Anwendung die Bots aus der API geladen und angezeigt werden
+        }
+        
+        /**
+         * Bot starten
+         * @param {string} botId - Die ID des Bots
+         */
+        function startBot(botId) {
+            // API-Anfrage zum Starten eines Bots
+            fetch('/api/bots/start', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: botId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    refreshDashboard();
+                    showToast('Bot wurde erfolgreich gestartet!', 'success');
+                } else {
+                    showToast(data.error || 'Fehler beim Starten des Bots', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Fehler:', error);
+                showToast('Serverfehler beim Starten des Bots', 'error');
+            });
+        }
+        
+        /**
+         * Bot stoppen
+         * @param {string} botId - Die ID des Bots
+         */
+        function stopBot(botId) {
+            // API-Anfrage zum Stoppen eines Bots
+            fetch('/api/bots/stop', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: botId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    refreshDashboard();
+                    showToast('Bot wurde erfolgreich gestoppt!', 'success');
+                } else {
+                    showToast(data.error || 'Fehler beim Stoppen des Bots', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Fehler:', error);
+                showToast('Serverfehler beim Stoppen des Bots', 'error');
+            });
+        }
+    </script>
 </body>
 </html>
