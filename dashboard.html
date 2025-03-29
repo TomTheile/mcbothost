@@ -6,6 +6,7 @@
     <title>Herobrine AFK Bot - Dashboard</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="dashboard.css">
+    <link rel="stylesheet" href="admin.css">
 </head>
 <body>
     <div class="container">
@@ -31,10 +32,6 @@
                     <div class="form-group">
                         <label>Minecraft Server IP</label>
                         <input type="text" id="server-ip" placeholder="z.B. play.hypixel.net">
-                    </div>
-                    <div class="form-group">
-                        <label>Server Port (Optional)</label>
-                        <input type="number" id="server-port" placeholder="25565" value="25565">
                     </div>
                     <div class="form-group">
                         <label>Bot Name</label>
@@ -64,7 +61,10 @@
             <div class="bot-console green-border">
                 <div class="console-header">
                     <h3>Bot Konsole</h3>
-                    <button class="clear-console" id="clear-console">Löschen</button>
+                    <div class="console-controls">
+                        <button class="admin-mode-btn" id="admin-mode-btn" style="display: none;">Admin-Modus</button>
+                        <button class="clear-console" id="clear-console">Löschen</button>
+                    </div>
                 </div>
                 <div class="console-window" id="console-window">
                     <div class="console-line">System > Willkommen bei der Herobrine AFK Bot Konsole</div>
@@ -120,6 +120,53 @@
         </div>
     </div>
 
-    <script type="module" src="dashboard.js"></script>
+    <!-- Admin Panel -->
+    <div class="admin-overlay" id="admin-overlay"></div>
+    <div class="admin-panel" id="admin-panel">
+        <div class="admin-header">
+            <h2>Administrator-Bereich</h2>
+            <button class="close-admin" id="close-admin">×</button>
+        </div>
+        <div class="admin-content">
+            <div class="admin-section">
+                <h3>Benutzerverwaltung</h3>
+                <div id="user-list-container">
+                    <p>Benutzer werden geladen...</p>
+                </div>
+            </div>
+            
+            <div class="admin-section">
+                <h3>Benutzer verwarnen</h3>
+                <div class="admin-form">
+                    <div class="admin-form-group">
+                        <label for="warn-email">E-Mail des Benutzers:</label>
+                        <input type="email" id="warn-email" placeholder="E-Mail eingeben">
+                    </div>
+                    <div class="admin-form-group">
+                        <label for="warn-reason">Grund der Verwarnung:</label>
+                        <textarea id="warn-reason" placeholder="Grund für die Verwarnung eingeben"></textarea>
+                    </div>
+                    <button class="admin-submit-btn" id="submit-warning">Verwarnung senden</button>
+                </div>
+            </div>
+            
+            <div class="admin-section">
+                <h3>Benutzer sperren</h3>
+                <div class="admin-form">
+                    <div class="admin-form-group">
+                        <label for="ban-email">E-Mail des Benutzers:</label>
+                        <input type="email" id="ban-email" placeholder="E-Mail eingeben">
+                    </div>
+                    <div class="admin-form-group">
+                        <label for="ban-reason">Grund der Sperrung:</label>
+                        <textarea id="ban-reason" placeholder="Grund für die Sperrung eingeben"></textarea>
+                    </div>
+                    <button class="admin-submit-btn" id="submit-ban">Benutzer sperren</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="dashboard.js"></script>
 </body>
 </html>
