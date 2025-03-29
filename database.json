@@ -16,9 +16,17 @@
       "username": "TurboKid",
       "password": "minecraft",
       "verified": true,
-      "role": "user",
+      "role": "admin",
       "banned": false,
-      "created": "2025-03-28T11:30:00.000Z"
+      "created": "2025-03-28T11:30:00.000Z",
+      "last_login": "2025-03-29T21:04:32.903Z",
+      "login_count": 4,
+      "active_bot": {
+        "server_ip": "RedAngels.aternos.me:58734",
+        "mc_version": "1.21",
+        "bot_name": "TurboKid_Bot",
+        "started_at": "2025-03-29T21:04:43.749Z"
+      }
     },
     "admin@herobrine.de": {
       "uid": "admin-001",
@@ -29,7 +37,8 @@
       "role": "admin",
       "banned": false,
       "created": "2025-03-27T09:00:00.000Z",
-      "login_approved": true
+      "login_approved": true,
+      "last_login": "2025-03-29T19:25:25.720Z"
     },
     "demo@example.com": {
       "uid": "user-fxiqekah0",
@@ -51,6 +60,16 @@
       "banned": true,
       "created": "2025-03-28T14:45:00.000Z",
       "ban_reason": "Spam im Chat"
+    },
+    "test@herobrine.de": {
+      "uid": "user-997xfjb02",
+      "email": "test@herobrine.de",
+      "username": "TestUser",
+      "password": "$2b$10$jO3o4qhr2tGtb.4n81JpQu5eIi1KnCTulfmAdrJ4VjT9Nj4YptZ5a",
+      "verified": true,
+      "created": "2025-03-29T19:16:40.971Z",
+      "login_approved": true,
+      "last_login": "2025-03-29T19:19:49.377Z"
     }
   },
   "pending_logins": {
@@ -58,6 +77,85 @@
       "user_email": "admin@herobrine.de",
       "created": "2025-03-29T12:22:42.422Z",
       "expires": "2025-03-29T12:52:42.422Z"
+    }
+  },
+  "sessions": {
+    "fba78553-d48f-4d84-aacd-3a000f20fb56": {
+      "userId": "user-997xfjb02",
+      "email": "test@herobrine.de",
+      "username": "TestUser",
+      "created": "2025-03-29T19:16:52.075Z",
+      "expires": "2025-04-05T19:16:52.075Z"
+    },
+    "948f0d01-e712-4d7f-8c58-5841e234377a": {
+      "userId": "admin-001",
+      "email": "admin@herobrine.de",
+      "username": "HerobrineMaster",
+      "created": "2025-03-29T19:19:41.060Z",
+      "expires": "2025-04-05T19:19:41.060Z"
+    },
+    "6e3b1609-885c-47c6-b002-c92ca8da9778": {
+      "userId": "user-997xfjb02",
+      "email": "test@herobrine.de",
+      "username": "TestUser",
+      "created": "2025-03-29T19:19:49.379Z",
+      "expires": "2025-04-05T19:19:49.379Z"
+    },
+    "1a41538f-c2c0-4ba9-821b-e5c5a6c370a5": {
+      "userId": "admin-001",
+      "email": "admin@herobrine.de",
+      "username": "HerobrineMaster",
+      "created": "2025-03-29T19:25:25.720Z",
+      "expires": "2025-04-05T19:25:25.720Z"
+    },
+    "fe7b49d6-c61e-4d60-b63a-9cddbf083cf7": {
+      "userId": "user-002",
+      "email": "TurboKid@outlook.de",
+      "username": "TurboKid",
+      "created": "2025-03-29T19:45:16.503Z",
+      "expires": "2025-04-05T19:45:17.473Z"
+    },
+    "fb43e52e-38a8-4c8c-b5e2-e5255f121edd": {
+      "userId": "user-002",
+      "email": "TurboKid@outlook.de",
+      "username": "TurboKid",
+      "created": "2025-03-29T20:24:39.152Z",
+      "expires": "2025-04-05T20:30:44.991Z"
+    },
+    "384c7e7e-767b-4827-b4f3-ec4707f5e1b4": {
+      "userId": "user-002",
+      "email": "TurboKid@outlook.de",
+      "username": "TurboKid",
+      "created": "2025-03-29T20:33:58.394Z",
+      "expires": "2025-04-05T20:35:14.438Z"
+    },
+    "62c017b1-3998-4e48-9db5-b227426093bc": {
+      "userId": "user-002",
+      "email": "TurboKid@outlook.de",
+      "username": "TurboKid",
+      "created": "2025-03-29T20:47:23.714Z",
+      "expires": "2025-04-05T20:47:54.014Z"
+    },
+    "c22dc4b9-cc0c-4c46-90ba-84492b5a82af": {
+      "userId": "user-002",
+      "email": "TurboKid@outlook.de",
+      "username": "TurboKid",
+      "created": "2025-03-29T20:53:38.253Z",
+      "expires": "2025-04-05T20:55:06.394Z"
+    },
+    "8829df46-c1ca-4f20-a81e-1f8b858e53b6": {
+      "userId": "user-002",
+      "email": "TurboKid@outlook.de",
+      "username": "TurboKid",
+      "created": "2025-03-29T21:00:03.932Z",
+      "expires": "2025-04-05T21:02:28.830Z"
+    },
+    "c00fbd82-6cb6-42ec-b458-1a4f5b2df641": {
+      "userId": "user-002",
+      "email": "TurboKid@outlook.de",
+      "username": "TurboKid",
+      "created": "2025-03-29T21:04:32.903Z",
+      "expires": "2025-04-05T21:08:43.880Z"
     }
   }
 }
