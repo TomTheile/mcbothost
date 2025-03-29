@@ -9,11 +9,22 @@ const activeBots = {};
 // Bot-Aktionen
 const botActions = {
     jump: (bot) => {
-        bot.setControlState('jump', true);
-        setTimeout(() => {
-            bot.setControlState('jump', false);
-        }, 500);
-        return { success: true, message: "Bot hat gesprungen" };
+        try {
+            bot.setControlState('jump', true);
+            const timeout = setTimeout(() => {
+                bot.setControlState('jump', false);
+            }, 500);
+
+            // Cleanup bei Fehler
+            process.on('uncaughtException', () => {
+                clearTimeout(timeout);
+                bot.setControlState('jump', false);
+            });
+
+            return { success: true, message: "Bot hat gesprungen" };
+        } catch (error) {
+            return { success: false, error: "Fehler beim Springen: " + error.message };
+        }
     },
     
     forward: (bot, distance = 1) => {
@@ -21,6 +32,30 @@ const botActions = {
         bot.setControlState('forward', true);
         setTimeout(() => {
             bot.setControlState('forward', false);
+
+// Server-Statistiken sammeln
+function collectServerStats(bot) {
+    try {
+        const stats = {
+            timestamp: new Date().toISOString(),
+            tps: bot.getTps() || 0,
+            players: Object.keys(bot.players).length,
+            position: bot.entity ? {
+                x: Math.floor(bot.entity.position.x),
+                y: Math.floor(bot.entity.position.y),
+                z: Math.floor(bot.entity.position.z)
+            } : null,
+            health: bot.health || 0,
+            memory: process.memoryUsage(),
+            ping: bot.player ? bot.player.ping : 0
+        };
+        return stats;
+    } catch (error) {
+        console.error('Fehler beim Sammeln der Server-Stats:', error);
+        return null;
+    }
+}
+
         }, d * 1000);
         return { success: true, message: `Bot bewegt sich ${d} Sekunden vorwärts` };
     },
@@ -77,12 +112,46 @@ function startBot(config) {
     }
     
     try {
+        // Zufälligen Botnamen generieren
+        const randomSuffix = Math.random().toString(36).substring(2, 8);
+        const generatedBotName = `Bot_${username}_${randomSuffix}`;
+
         // Bot mit Mineflayer erstellen
         const bot = mineflayer.createBot({
             host: serverIp,
             port: parseInt(serverPort) || 25565,
-            username: botName,
-            version: mcVersion
+            username: generatedBotName,
+            version: mcVersion,
+            auth: 'offline',
+            hideErrors: false,
+            checkTimeoutInterval: 60000,
+            defaultChatPatterns: true
+        });
+
+        // Event-Handler für Verbindungsfehler
+        bot.on('error', (err) => {
+            logMessage(`Verbindungsfehler: ${err.message}`);
+            delete activeBots[username];
+            return {
+                success: false,
+                error: `Verbindungsfehler: ${err.message}`
+            };
+        });
+
+        // Event-Handler für erfolgreichen Login
+        bot.once('login', () => {
+            logMessage(`Bot erfolgreich eingeloggt als ${generatedBotName}`);
+            bot.chat("/register 123456789 123456789"); // Automatische Registrierung
+        });
+
+        // Event-Handler für Spawn-Event
+        bot.once('spawn', () => {
+            logMessage(`Bot erfolgreich gespawnt auf ${serverIp}:${serverPort}`);
+            // Kleine Bewegung ausführen um zu zeigen dass der Bot aktiv ist
+            setTimeout(() => {
+                bot.setControlState('forward', true);
+                setTimeout(() => bot.setControlState('forward', false), 1000);
+            }, 2000);
         });
         
         // Bot-Protokoll initialisieren
