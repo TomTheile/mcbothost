@@ -98,27 +98,33 @@ export async function loginUser(email, password) {
                 return;
             }
             
-            // Direkter Datenbankzugriff statt Server-Anfrage
-            const db = require('./database.json'); //This line assumes database.json exists in the same directory.  Error handling might be needed for production.
-            if (db.users && db.users[email] && db.users[email].password === password) {
-                // Benutzer gefunden und Passwort korrekt
-                localStorage.setItem('userEmail', email);
-                resolve({ 
-                    success: true, 
-                    user: {
-                        uid: db.users[email].uid,
-                        email: email,
-                        username: db.users[email].username,
-                        verified: db.users[email].verified,
-                        role: db.users[email].role || 'user'
-                    }
-                });
-            } else {
+            // Server-Anfrage für Login
+            fetch('/api/users/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email, password }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    localStorage.setItem('userEmail', email);
+                    resolve(data);
+                } else {
+                    resolve({
+                        success: false,
+                        error: data.error || "Ungültige E-Mail oder Passwort"
+                    });
+                }
+            })
+            .catch(error => {
+                console.error("Login-Fehler:", error);
                 resolve({
                     success: false,
-                    error: "Ungültige E-Mail oder Passwort"
+                    error: "Verbindungsfehler beim Anmelden"
                 });
-            }
+            });
         }, 800);
     });
 }
