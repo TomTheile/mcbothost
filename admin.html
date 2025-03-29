@@ -6,242 +6,453 @@
     <title>Admin Dashboard - Herobrine AFK Bot</title>
     <link rel="stylesheet" href="styles.css">
     <style>
-        /* Admin-spezifische Styles */
-        .admin-section {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            flex: 1;
+        /* Admin-Dashboard-Styles */
+        :root {
+            --admin-primary: #1eff00;
+            --admin-dark: #121212;
+            --admin-gray: #1a1a1a;
+            --admin-light-gray: #333;
+            --admin-text: #e0e0e0;
+            --admin-text-dim: #a0a0a0;
         }
         
-        .admin-card {
-            background-color: rgba(0, 0, 0, 0.7);
-            border: 2px solid #1eff00;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 0 15px rgba(30, 255, 0, 0.3);
+        .admin-dashboard {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            min-height: calc(100vh - 150px);
+        }
+        
+        /* Sidebar */
+        .admin-sidebar {
+            background-color: rgba(0, 0, 0, 0.8);
+            border-right: 1px solid var(--admin-light-gray);
+            padding: 20px 0;
+        }
+        
+        .admin-profile {
+            display: flex;
+            align-items: center;
+            padding: 0 20px 20px;
+            border-bottom: 1px solid var(--admin-light-gray);
             margin-bottom: 20px;
         }
         
-        .admin-card h3 {
-            color: #1eff00;
-            margin-top: 0;
-            border-bottom: 1px solid #333;
-            padding-bottom: 10px;
-            margin-bottom: 15px;
-        }
-        
-        .admin-tabs {
+        .admin-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: var(--admin-primary);
             display: flex;
-            background-color: rgba(0, 0, 0, 0.7);
-            border-radius: 10px 10px 0 0;
-            overflow: hidden;
-            margin-bottom: 20px;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-weight: bold;
+            color: #000;
         }
         
-        .tab-button {
+        .admin-info h3 {
+            color: var(--admin-primary);
+            margin: 0;
+            font-size: 1.1rem;
+        }
+        
+        .admin-info p {
+            color: var(--admin-text-dim);
+            margin: 5px 0 0;
+            font-size: 0.85rem;
+        }
+        
+        .admin-nav {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .admin-nav-item {
             padding: 12px 20px;
-            background-color: rgba(15, 15, 15, 0.7);
-            color: #fff;
-            border: none;
             cursor: pointer;
-            flex: 1;
-            font-size: 1rem;
-            transition: background-color 0.3s;
-        }
-        
-        .tab-button.active {
-            background-color: #1eff00;
-            color: #000;
-            font-weight: bold;
-        }
-        
-        .tab-button:hover:not(.active) {
-            background-color: rgba(30, 255, 0, 0.2);
-        }
-        
-        /* Admin/Console Tabs */
-        .admin-tab-navigation {
-            margin-bottom: 20px;
-        }
-        
-        .admin-tab-navigation .tabs {
+            color: var(--admin-text);
+            transition: all 0.3s;
+            border-left: 3px solid transparent;
             display: flex;
-            background-color: rgba(0, 0, 0, 0.7);
-            border-radius: 5px;
-            overflow: hidden;
-            border: 1px solid #1eff00;
-        }
-        
-        .tab-nav {
-            padding: 10px 20px;
-            background-color: rgba(15, 15, 15, 0.7);
-            color: #fff;
-            border: none;
-            cursor: pointer;
-            flex: 1;
-            font-size: 1rem;
-            transition: background-color 0.3s;
-        }
-        
-        .tab-nav.active {
-            background-color: #1eff00;
-            color: #000;
-            font-weight: bold;
-        }
-        
-        .tab-nav:hover:not(.active) {
-            background-color: rgba(30, 255, 0, 0.2);
-        }
-        
-        .tab-panel {
-            display: none;
-        }
-        
-        .tab-panel.active {
-            display: block;
-        }
-        
-        .tab-content {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-        
-        .user-list, .bot-list {
-            max-height: 250px;
-            overflow-y: auto;
-        }
-        
-        .user-item, .bot-item {
-            background-color: rgba(15, 15, 15, 0.7);
-            padding: 10px;
-            margin-bottom: 10px;
-            border-radius: 5px;
-            display: flex;
-            justify-content: space-between;
             align-items: center;
         }
         
-        .user-info, .bot-info {
-            flex: 1;
+        .admin-nav-item.active {
+            background-color: rgba(30, 255, 0, 0.1);
+            color: var(--admin-primary);
+            border-left-color: var(--admin-primary);
         }
         
-        .user-actions, .bot-actions {
-            display: flex;
-            gap: 10px;
+        .admin-nav-item:hover:not(.active) {
+            background-color: rgba(255, 255, 255, 0.05);
         }
         
-        .user-actions button, .bot-actions button, .save-btn {
-            background-color: #1eff00;
-            color: #000;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 3px;
-            cursor: pointer;
-            font-size: 0.8rem;
-        }
-        
-        .bot-actions button.stop-btn {
-            background-color: #ff3838;
-        }
-        
-        .user-actions button.ban-btn.active {
-            background-color: #ff3838;
-            color: white;
-        }
-        
-        .user-actions button:disabled {
-            background-color: #777;
-            cursor: not-allowed;
-            opacity: 0.7;
-        }
-        
-        .user-actions button:hover, .bot-actions button:hover, .save-btn:hover {
-            opacity: 0.9;
-        }
-        
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-        }
-        
-        .stat-item {
-            background-color: rgba(15, 15, 15, 0.7);
-            padding: 15px;
-            border-radius: 5px;
+        .nav-icon {
+            margin-right: 10px;
+            font-size: 1.2rem;
+            width: 20px;
             text-align: center;
+        }
+        
+        /* Main Content Area */
+        .admin-content {
+            padding: 20px;
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+        
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--admin-light-gray);
+        }
+        
+        .content-header h2 {
+            color: var(--admin-primary);
+            margin: 0;
+        }
+        
+        .admin-search {
+            display: flex;
+            align-items: center;
+        }
+        
+        .admin-search input {
+            background-color: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--admin-light-gray);
+            color: var(--admin-text);
+            padding: 8px 15px;
+            border-radius: 5px;
+            width: 250px;
+        }
+        
+        .admin-search input:focus {
+            border-color: var(--admin-primary);
+            outline: none;
+        }
+        
+        /* Cards and Stats */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background-color: rgba(0, 0, 0, 0.6);
+            border: 1px solid var(--admin-light-gray);
+            border-radius: 8px;
+            padding: 20px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            border-color: var(--admin-primary);
+        }
+        
+        .stat-icon {
+            font-size: 2rem;
+            color: var(--admin-primary);
+            margin-bottom: 15px;
         }
         
         .stat-value {
             font-size: 2rem;
-            color: #1eff00;
-            margin: 10px 0;
+            font-weight: bold;
+            color: var(--admin-text);
+            margin-bottom: 5px;
         }
         
         .stat-label {
-            color: #a0a0a0;
+            color: var(--admin-text-dim);
             font-size: 0.9rem;
         }
         
-        .login-logs {
-            max-height: 200px;
-            overflow-y: auto;
+        /* Tables */
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
         }
         
-        .log-item {
-            background-color: rgba(15, 15, 15, 0.7);
-            padding: 10px;
-            margin-bottom: 10px;
-            border-radius: 5px;
-            font-size: 0.9rem;
+        .admin-table th {
+            background-color: rgba(0, 0, 0, 0.6);
+            color: var(--admin-primary);
+            text-align: left;
+            padding: 15px;
+            border-bottom: 2px solid var(--admin-light-gray);
         }
         
-        .log-item span {
-            color: #1eff00;
+        .admin-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--admin-light-gray);
+            color: var(--admin-text);
         }
         
-        .form-group {
+        .admin-table tr:hover td {
+            background-color: rgba(30, 255, 0, 0.05);
+        }
+        
+        /* Status Indicators */
+        .status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        
+        .status-online {
+            background-color: rgba(0, 255, 0, 0.1);
+            color: #55ff55;
+            border: 1px solid #55ff55;
+        }
+        
+        .status-offline {
+            background-color: rgba(255, 0, 0, 0.1);
+            color: #ff5555;
+            border: 1px solid #ff5555;
+        }
+        
+        .status-warning {
+            background-color: rgba(255, 255, 0, 0.1);
+            color: #ffff55;
+            border: 1px solid #ffff55;
+        }
+        
+        /* Actions */
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .action-btn {
+            background: none;
+            border: 1px solid var(--admin-light-gray);
+            color: var(--admin-text-dim);
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.3s;
+        }
+        
+        .action-btn:hover {
+            background-color: var(--admin-primary);
+            border-color: var(--admin-primary);
+            color: #000;
+        }
+        
+        .action-btn.danger {
+            border-color: #ff5555;
+            color: #ff5555;
+        }
+        
+        .action-btn.danger:hover {
+            background-color: #ff5555;
+            color: #000;
+        }
+        
+        /* Charts and Graphs */
+        .chart-container {
+            background-color: rgba(0, 0, 0, 0.6);
+            border: 1px solid var(--admin-light-gray);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 15px;
+        }
+        
+        .chart-title {
+            color: var(--admin-primary);
+            margin: 0;
+            font-size: 1.2rem;
+        }
+        
+        .chart-controls {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .chart-control {
+            background: none;
+            border: 1px solid var(--admin-light-gray);
+            color: var(--admin-text-dim);
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+        
+        .chart-control.active {
+            background-color: var(--admin-primary);
+            border-color: var(--admin-primary);
+            color: #000;
+        }
+        
+        .chart-body {
+            height: 300px;
+            position: relative;
+        }
+        
+        /* Tabs */
+        .admin-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--admin-light-gray);
+            margin-bottom: 20px;
+        }
+        
+        .admin-tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            color: var(--admin-text-dim);
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        
+        .admin-tab.active {
+            color: var(--admin-primary);
+            border-bottom-color: var(--admin-primary);
+        }
+        
+        .admin-tab:hover:not(.active) {
+            color: var(--admin-text);
+            border-bottom-color: var(--admin-light-gray);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* Forms */
+        .admin-form {
+            background-color: rgba(0, 0, 0, 0.6);
+            border: 1px solid var(--admin-light-gray);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
         }
         
         .form-group label {
             display: block;
-            margin-bottom: 5px;
-            color: #fff;
+            margin-bottom: 8px;
+            color: var(--admin-text);
         }
         
-        .form-group input[type="number"] {
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
             width: 100%;
-            padding: 8px;
-            border-radius: 3px;
-            border: 1px solid #1eff00;
-            background-color: rgba(0, 0, 0, 0.5);
-            color: #fff;
+            padding: 10px;
+            background-color: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--admin-light-gray);
+            color: var(--admin-text);
+            border-radius: 5px;
         }
         
-        .checkbox-group {
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: var(--admin-primary);
+            outline: none;
+        }
+        
+        .form-actions {
             display: flex;
-            flex-wrap: wrap;
+            justify-content: flex-end;
             gap: 10px;
         }
         
-        .checkbox-group label {
-            display: flex;
-            align-items: center;
-            color: #fff;
+        .form-actions button {
+            padding: 10px 20px;
+            border-radius: 5px;
             cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s;
         }
         
-        .checkbox-group input[type="checkbox"] {
-            margin-right: 5px;
+        .form-actions .cancel-btn {
+            background: none;
+            border: 1px solid var(--admin-light-gray);
+            color: var(--admin-text-dim);
         }
         
-        .save-btn {
-            align-self: flex-start;
-            padding: 8px 15px;
-            font-weight: bold;
+        .form-actions .save-btn {
+            background-color: var(--admin-primary);
+            border: 1px solid var(--admin-primary);
+            color: #000;
+        }
+        
+        .form-actions .cancel-btn:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: var(--admin-text);
+        }
+        
+        .form-actions .save-btn:hover {
+            background-color: #19cc00;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .admin-dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            .admin-sidebar {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                bottom: 0;
+                width: 250px;
+                z-index: 100;
+            }
+            
+            .admin-sidebar.active {
+                display: block;
+            }
+            
+            .mobile-nav-toggle {
+                display: block;
+                background: none;
+                border: none;
+                color: var(--admin-primary);
+                font-size: 1.5rem;
+                cursor: pointer;
+            }
+        }
+        
+        @media (min-width: 769px) {
+            .mobile-nav-toggle {
+                display: none;
+            }
         }
     </style>
 </head>
@@ -249,167 +460,583 @@
     <div class="container">
         <!-- Header (Top) -->
         <div class="header">
-            <h1>Herobrine AFK Bot - Admin</h1>
+            <h1>Admin Dashboard</h1>
             <div class="quick-links">
-                <span id="admin-username">HerobrineMaster</span>
-                <a href="dashboard.html">Zum Dashboard</a>
-                <a href="#" id="logout-link">Abmelden</a>
+                <a href="dashboard.html">Zum User-Dashboard</a>
+                <a href="#" onclick="logout()">Abmelden</a>
             </div>
         </div>
 
-        <div class="main-content">
-            <!-- Admin Tab-Navigation -->
-            <div class="admin-tabs">
-                <button class="tab-button active" data-tab="admin-tab">Admin-Bereich</button>
-                <button class="tab-button" data-tab="bot-tab">Bot-Verwaltung</button>
-            </div>
-        
-            <!-- Tab-Navigation für Admin und Console -->
-            <div class="admin-tab-navigation">
-                <div class="tabs">
-                    <button id="admin-panel-tab" class="tab-nav active">Admin-Panel</button>
-                    <button id="console-tab" class="tab-nav">Console</button>
-                </div>
-            </div>
-            
-            <!-- Admin-Panel Tab -->
-            <div id="admin-panel-content" class="tab-panel active">
-                <!-- Admin Section - Tab-Inhalt -->
-                <div class="tab-content" id="admin-tab">
-                    <!-- Statistiken -->
-                    <div class="admin-card">
-                        <h3>Statistiken</h3>
-                        <div class="stats-grid">
-                            <div class="stat-item">
-                                <div class="stat-value" id="user-count">0</div>
-                                <div class="stat-label">Registrierte Benutzer</div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-value" id="active-bots">0</div>
-                                <div class="stat-label">Aktive Bots</div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-value" id="server-uptime">0h</div>
-                                <div class="stat-label">Server-Laufzeit</div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-value" id="logins-today">0</div>
-                                <div class="stat-label">Logins heute</div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Benutzerverwaltung -->
-                    <div class="admin-card">
-                        <h3>Benutzerverwaltung</h3>
-                        <div class="user-list" id="user-list">
-                            <!-- Benutzer werden dynamisch hinzugefügt -->
-                            <div class="user-item">
-                                <div class="user-info">
-                                    <strong>TurboKid</strong> (TurboKid@outlook.de)
-                                    <div style="font-size: 0.8rem; color: #a0a0a0;">Rolle: Benutzer | Status: Verifiziert</div>
-                                </div>
-                                <div class="user-actions">
-                                    <button>Bearbeiten</button>
-                                    <button class="delete">Löschen</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Login-Logs -->
-                    <div class="admin-card">
-                        <h3>Login-Protokoll</h3>
-                        <div class="login-logs" id="login-logs">
-                            <!-- Logs werden dynamisch hinzugefügt -->
-                            <div class="log-item">
-                                <strong>29.03.2025 12:35</strong> - Benutzer <span>TurboKid</span> hat sich angemeldet
-                            </div>
-                        </div>
+        <div class="admin-dashboard">
+            <!-- Sidebar -->
+            <div class="admin-sidebar">
+                <div class="admin-profile">
+                    <div class="admin-avatar">A</div>
+                    <div class="admin-info">
+                        <h3 id="admin-name">Administrator</h3>
+                        <p>Admin-Bereich</p>
                     </div>
                 </div>
                 
-                <!-- Bot-Verwaltung Tab-Inhalt -->
-                <div class="tab-content" id="bot-tab" style="display: none;">
+                <ul class="admin-nav">
+                    <li class="admin-nav-item active" data-page="dashboard">
+                        <span class="nav-icon">📊</span> Dashboard
+                    </li>
+                    <li class="admin-nav-item" data-page="users">
+                        <span class="nav-icon">👥</span> Benutzer-Verwaltung
+                    </li>
+                    <li class="admin-nav-item" data-page="bots">
+                        <span class="nav-icon">🤖</span> Bot-Verwaltung
+                    </li>
+                    <li class="admin-nav-item" data-page="system">
+                        <span class="nav-icon">⚙️</span> System-Einstellungen
+                    </li>
+                    <li class="admin-nav-item" data-page="logs">
+                        <span class="nav-icon">📝</span> System-Logs
+                    </li>
+                </ul>
             </div>
             
-            <!-- Console Tab -->
-            <div id="console-panel-content" class="tab-panel" style="display: none;">
-                <!-- Bot-Übersicht -->
-                <div class="admin-card">
-                    <h3>Bot-Übersicht</h3>
-                    <div class="stats-grid">
-                        <div class="stat-item">
-                            <div class="stat-value" id="total-bots">0</div>
-                            <div class="stat-label">Gesamt-Bots</div>
+            <!-- Main Content Area -->
+            <div class="admin-content">
+                <!-- Dashboard Page -->
+                <div class="admin-page active" id="dashboard-page">
+                    <div class="content-header">
+                        <h2>Admin Dashboard</h2>
+                        <div class="admin-search">
+                            <input type="text" placeholder="Suchen...">
                         </div>
-                        <div class="stat-item">
-                            <div class="stat-value" id="connected-bots">0</div>
-                            <div class="stat-label">Verbundene Bots</div>
+                    </div>
+                    
+                    <div class="stats-container">
+                        <div class="stat-card">
+                            <div class="stat-icon">👥</div>
+                            <div class="stat-value">24</div>
+                            <div class="stat-label">Registrierte Benutzer</div>
                         </div>
-                        <div class="stat-item">
-                            <div class="stat-value" id="servers-count">0</div>
+                        <div class="stat-card">
+                            <div class="stat-icon">🤖</div>
+                            <div class="stat-value">18</div>
+                            <div class="stat-label">Aktive Bots</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">📊</div>
+                            <div class="stat-value">532</div>
+                            <div class="stat-label">Bot-Stunden Gesamt</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">🔄</div>
+                            <div class="stat-value">8</div>
                             <div class="stat-label">Aktive Server</div>
                         </div>
-                        <div class="stat-item">
-                            <div class="stat-value" id="total-uptime">0h</div>
-                            <div class="stat-label">Gesamte Laufzeit</div>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <div class="chart-header">
+                            <h3 class="chart-title">Benutzer-Aktivität</h3>
+                            <div class="chart-controls">
+                                <button class="chart-control active">Woche</button>
+                                <button class="chart-control">Monat</button>
+                                <button class="chart-control">Jahr</button>
+                            </div>
+                        </div>
+                        <div class="chart-body">
+                            <canvas id="activity-chart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <div class="chart-header">
+                            <h3 class="chart-title">System-Auslastung</h3>
+                            <div class="chart-controls">
+                                <button class="chart-control active">Echtzeit</button>
+                                <button class="chart-control">24h</button>
+                                <button class="chart-control">7 Tage</button>
+                            </div>
+                        </div>
+                        <div class="chart-body">
+                            <canvas id="system-chart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <h3 style="color: var(--admin-primary); margin-bottom: 15px;">Neueste Aktivitäten</h3>
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Benutzer</th>
+                                <th>Aktion</th>
+                                <th>Zeitpunkt</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>MaxMustermann</td>
+                                <td>Bot erstellt</td>
+                                <td>19.03.2023 14:32</td>
+                                <td><span class="status status-online">Erfolgreich</span></td>
+                            </tr>
+                            <tr>
+                                <td>AnnaBeispiel</td>
+                                <td>Bot gestartet</td>
+                                <td>19.03.2023 13:45</td>
+                                <td><span class="status status-online">Erfolgreich</span></td>
+                            </tr>
+                            <tr>
+                                <td>ThomasTest</td>
+                                <td>Server-Verbindung</td>
+                                <td>19.03.2023 12:18</td>
+                                <td><span class="status status-warning">Timeout</span></td>
+                            </tr>
+                            <tr>
+                                <td>SarahSample</td>
+                                <td>Registrierung</td>
+                                <td>19.03.2023 10:09</td>
+                                <td><span class="status status-online">Erfolgreich</span></td>
+                            </tr>
+                            <tr>
+                                <td>PeterBeispiel</td>
+                                <td>Bot gestoppt</td>
+                                <td>19.03.2023 09:42</td>
+                                <td><span class="status status-offline">Beendet</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Users Page -->
+                <div class="admin-page" id="users-page">
+                    <div class="content-header">
+                        <h2>Benutzer-Verwaltung</h2>
+                        <div class="admin-search">
+                            <input type="text" placeholder="Benutzer suchen...">
+                        </div>
+                    </div>
+                    
+                    <div class="admin-tabs">
+                        <button class="admin-tab active" data-tab="all-users">Alle Benutzer</button>
+                        <button class="admin-tab" data-tab="active-users">Aktive Benutzer</button>
+                        <button class="admin-tab" data-tab="inactive-users">Inaktive Benutzer</button>
+                        <button class="admin-tab" data-tab="banned-users">Gesperrte Benutzer</button>
+                    </div>
+                    
+                    <div class="tab-content active" id="all-users-content">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Benutzername</th>
+                                    <th>E-Mail</th>
+                                    <th>Registriert am</th>
+                                    <th>Status</th>
+                                    <th>Aktionen</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>MaxMustermann</td>
+                                    <td>max@example.com</td>
+                                    <td>15.01.2023</td>
+                                    <td><span class="status status-online">Aktiv</span></td>
+                                    <td class="action-buttons">
+                                        <button class="action-btn">Bearbeiten</button>
+                                        <button class="action-btn">Details</button>
+                                        <button class="action-btn danger">Sperren</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>AnnaBeispiel</td>
+                                    <td>anna@example.com</td>
+                                    <td>22.02.2023</td>
+                                    <td><span class="status status-online">Aktiv</span></td>
+                                    <td class="action-buttons">
+                                        <button class="action-btn">Bearbeiten</button>
+                                        <button class="action-btn">Details</button>
+                                        <button class="action-btn danger">Sperren</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>ThomasTest</td>
+                                    <td>thomas@example.com</td>
+                                    <td>05.03.2023</td>
+                                    <td><span class="status status-warning">Inaktiv</span></td>
+                                    <td class="action-buttons">
+                                        <button class="action-btn">Bearbeiten</button>
+                                        <button class="action-btn">Details</button>
+                                        <button class="action-btn danger">Sperren</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>SarahSample</td>
+                                    <td>sarah@example.com</td>
+                                    <td>19.03.2023</td>
+                                    <td><span class="status status-online">Aktiv</span></td>
+                                    <td class="action-buttons">
+                                        <button class="action-btn">Bearbeiten</button>
+                                        <button class="action-btn">Details</button>
+                                        <button class="action-btn danger">Sperren</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>PeterBeispiel</td>
+                                    <td>peter@example.com</td>
+                                    <td>10.01.2023</td>
+                                    <td><span class="status status-offline">Gesperrt</span></td>
+                                    <td class="action-buttons">
+                                        <button class="action-btn">Bearbeiten</button>
+                                        <button class="action-btn">Details</button>
+                                        <button class="action-btn">Entsperren</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="tab-content" id="active-users-content">
+                        <!-- Aktive Benutzer-Tabelle -->
+                    </div>
+                    
+                    <div class="tab-content" id="inactive-users-content">
+                        <!-- Inaktive Benutzer-Tabelle -->
+                    </div>
+                    
+                    <div class="tab-content" id="banned-users-content">
+                        <!-- Gesperrte Benutzer-Tabelle -->
+                    </div>
+                </div>
+                
+                <!-- Bots Page -->
+                <div class="admin-page" id="bots-page">
+                    <div class="content-header">
+                        <h2>Bot-Verwaltung</h2>
+                        <div class="admin-search">
+                            <input type="text" placeholder="Bot suchen...">
+                        </div>
+                    </div>
+                    
+                    <div class="admin-tabs">
+                        <button class="admin-tab active" data-tab="all-bots">Alle Bots</button>
+                        <button class="admin-tab" data-tab="online-bots">Online Bots</button>
+                        <button class="admin-tab" data-tab="offline-bots">Offline Bots</button>
+                        <button class="admin-tab" data-tab="problematic-bots">Problematische Bots</button>
+                    </div>
+                    
+                    <div class="tab-content active" id="all-bots-content">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Bot-Name</th>
+                                    <th>Besitzer</th>
+                                    <th>Server</th>
+                                    <th>Status</th>
+                                    <th>Laufzeit</th>
+                                    <th>Aktionen</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>MaxBot1</td>
+                                    <td>MaxMustermann</td>
+                                    <td>mc.example.com</td>
+                                    <td><span class="status status-online">Online</span></td>
+                                    <td>2h 35m</td>
+                                    <td class="action-buttons">
+                                        <button class="action-btn">Details</button>
+                                        <button class="action-btn">Logs</button>
+                                        <button class="action-btn danger">Stoppen</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>AnnaBot</td>
+                                    <td>AnnaBeispiel</td>
+                                    <td>play.minecraft.net</td>
+                                    <td><span class="status status-online">Online</span></td>
+                                    <td>4h 12m</td>
+                                    <td class="action-buttons">
+                                        <button class="action-btn">Details</button>
+                                        <button class="action-btn">Logs</button>
+                                        <button class="action-btn danger">Stoppen</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>TomBot</td>
+                                    <td>ThomasTest</td>
+                                    <td>mc.hypixel.net</td>
+                                    <td><span class="status status-warning">Verbindung instabil</span></td>
+                                    <td>0h 45m</td>
+                                    <td class="action-buttons">
+                                        <button class="action-btn">Details</button>
+                                        <button class="action-btn">Logs</button>
+                                        <button class="action-btn danger">Stoppen</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>SarahBot</td>
+                                    <td>SarahSample</td>
+                                    <td>mineplex.com</td>
+                                    <td><span class="status status-online">Online</span></td>
+                                    <td>1h 20m</td>
+                                    <td class="action-buttons">
+                                        <button class="action-btn">Details</button>
+                                        <button class="action-btn">Logs</button>
+                                        <button class="action-btn danger">Stoppen</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>PeterBot</td>
+                                    <td>PeterBeispiel</td>
+                                    <td>mc.server.de</td>
+                                    <td><span class="status status-offline">Offline</span></td>
+                                    <td>0h 0m</td>
+                                    <td class="action-buttons">
+                                        <button class="action-btn">Details</button>
+                                        <button class="action-btn">Logs</button>
+                                        <button class="action-btn">Starten</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="tab-content" id="online-bots-content">
+                        <!-- Online Bots-Tabelle -->
+                    </div>
+                    
+                    <div class="tab-content" id="offline-bots-content">
+                        <!-- Offline Bots-Tabelle -->
+                    </div>
+                    
+                    <div class="tab-content" id="problematic-bots-content">
+                        <!-- Problematische Bots-Tabelle -->
+                    </div>
+                </div>
+                
+                <!-- System Page -->
+                <div class="admin-page" id="system-page">
+                    <div class="content-header">
+                        <h2>System-Einstellungen</h2>
+                    </div>
+                    
+                    <div class="admin-form">
+                        <h3 style="color: var(--admin-primary); margin-bottom: 20px;">Allgemeine Einstellungen</h3>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Maximale Anzahl von Bots pro Benutzer</label>
+                                <input type="number" value="3" min="1" max="10">
+                            </div>
+                            <div class="form-group">
+                                <label>Automatische Bot-Neustartversuche</label>
+                                <input type="number" value="5" min="0" max="20">
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Serverinformationen aktualisieren (Sekunden)</label>
+                                <input type="number" value="60" min="10" max="3600">
+                            </div>
+                            <div class="form-group">
+                                <label>Standard-Timeout für Bot-Verbindungen (Sekunden)</label>
+                                <input type="number" value="30" min="5" max="120">
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>System-Status</label>
+                                <select>
+                                    <option value="online">Online</option>
+                                    <option value="maintenance">Wartungsmodus</option>
+                                    <option value="readonly">Schreibgeschützt</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Bot-Client-Version</label>
+                                <select>
+                                    <option value="1.20.4">Minecraft 1.20.4</option>
+                                    <option value="1.19.4">Minecraft 1.19.4</option>
+                                    <option value="1.18.2">Minecraft 1.18.2</option>
+                                    <option value="1.17.1">Minecraft 1.17.1</option>
+                                    <option value="1.16.5">Minecraft 1.16.5</option>
+                                    <option value="1.12.2">Minecraft 1.12.2</option>
+                                    <option value="1.8.9">Minecraft 1.8.9</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button class="cancel-btn">Zurücksetzen</button>
+                            <button class="save-btn">Einstellungen speichern</button>
+                        </div>
+                    </div>
+                    
+                    <div class="admin-form">
+                        <h3 style="color: var(--admin-primary); margin-bottom: 20px;">E-Mail-Einstellungen</h3>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>SMTP-Server</label>
+                                <input type="text" value="smtp.example.com">
+                            </div>
+                            <div class="form-group">
+                                <label>SMTP-Port</label>
+                                <input type="number" value="587">
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>E-Mail-Absender</label>
+                                <input type="email" value="noreply@herobrine-bot.de">
+                            </div>
+                            <div class="form-group">
+                                <label>Absendername</label>
+                                <input type="text" value="Herobrine AFK Bot">
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>SMTP-Benutzername</label>
+                                <input type="text" value="smtp_user">
+                            </div>
+                            <div class="form-group">
+                                <label>SMTP-Passwort</label>
+                                <input type="password" value="********">
+                            </div>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button class="cancel-btn">Zurücksetzen</button>
+                            <button class="save-btn">Einstellungen speichern</button>
+                        </div>
+                    </div>
+                    
+                    <div class="admin-form">
+                        <h3 style="color: var(--admin-primary); margin-bottom: 20px;">Sicherheitseinstellungen</h3>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Maximale Anmeldeversuche</label>
+                                <input type="number" value="5" min="1" max="10">
+                            </div>
+                            <div class="form-group">
+                                <label>Sperrdauer nach fehlgeschlagenen Anmeldungen (Minuten)</label>
+                                <input type="number" value="30" min="5" max="1440">
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Session-Gültigkeit (Stunden)</label>
+                                <input type="number" value="24" min="1" max="168">
+                            </div>
+                            <div class="form-group">
+                                <label>Zwei-Faktor-Authentifizierung</label>
+                                <select>
+                                    <option value="disabled">Deaktiviert</option>
+                                    <option value="optional">Optional</option>
+                                    <option value="required">Erforderlich</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button class="cancel-btn">Zurücksetzen</button>
+                            <button class="save-btn">Einstellungen speichern</button>
                         </div>
                     </div>
                 </div>
                 
-                <!-- Aktive Bots -->
-                <div class="admin-card">
-                    <h3>Aktive Bots</h3>
-                    <div class="bot-list" id="bot-list">
-                        <!-- Demo-Bot für die Anzeige -->
-                        <div class="bot-item">
-                            <div class="bot-info">
-                                <strong>TurboKid_Bot</strong>
-                                <div style="font-size: 0.8rem; color: #a0a0a0;">Server: play.hypixel.net | Version: 1.21.4</div>
-                                <div style="font-size: 0.8rem; color: #1eff00;">Status: Online seit 2h 15m</div>
-                            </div>
-                            <div class="bot-actions">
-                                <button class="view-btn">Anzeigen</button>
-                                <button class="stop-btn">Stoppen</button>
-                            </div>
-                        </div>
-                        <div class="bot-item">
-                            <div class="bot-info">
-                                <strong>Demo_Bot</strong>
-                                <div style="font-size: 0.8rem; color: #a0a0a0;">Server: mc.example.com | Version: 1.20</div>
-                                <div style="font-size: 0.8rem; color: #1eff00;">Status: Online seit 0h 45m</div>
-                            </div>
-                            <div class="bot-actions">
-                                <button class="view-btn">Anzeigen</button>
-                                <button class="stop-btn">Stoppen</button>
-                            </div>
+                <!-- Logs Page -->
+                <div class="admin-page" id="logs-page">
+                    <div class="content-header">
+                        <h2>System-Logs</h2>
+                        <div class="admin-search">
+                            <input type="text" placeholder="Logs durchsuchen...">
                         </div>
                     </div>
-                </div>
-                
-                <!-- Bot-Konfiguration -->
-                <div class="admin-card">
-                    <h3>Bot-Konfiguration</h3>
-                    <div class="bot-config-form">
-                        <div class="form-group">
-                            <label>Maximale Bots pro Benutzer</label>
-                            <input type="number" id="max-bots" value="1" min="1" max="10">
-                        </div>
-                        <div class="form-group">
-                            <label>Unterstützte Minecraft-Versionen</label>
-                            <div class="checkbox-group">
-                                <label><input type="checkbox" checked> 1.8</label>
-                                <label><input type="checkbox" checked> 1.12</label>
-                                <label><input type="checkbox" checked> 1.16</label>
-                                <label><input type="checkbox" checked> 1.17</label>
-                                <label><input type="checkbox" checked> 1.18</label>
-                                <label><input type="checkbox" checked> 1.19</label>
-                                <label><input type="checkbox" checked> 1.20</label>
-                                <label><input type="checkbox" checked> 1.21.4</label>
-                            </div>
-                        </div>
-                        <button class="save-btn">Speichern</button>
+                    
+                    <div class="admin-tabs">
+                        <button class="admin-tab active" data-tab="all-logs">Alle Logs</button>
+                        <button class="admin-tab" data-tab="error-logs">Fehler</button>
+                        <button class="admin-tab" data-tab="warning-logs">Warnungen</button>
+                        <button class="admin-tab" data-tab="info-logs">Info</button>
+                    </div>
+                    
+                    <div class="tab-content active" id="all-logs-content">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Zeitstempel</th>
+                                    <th>Typ</th>
+                                    <th>Quelle</th>
+                                    <th>Nachricht</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>19.03.2023 15:45:22</td>
+                                    <td><span class="status status-online">Info</span></td>
+                                    <td>System</td>
+                                    <td>Administrator hat sich angemeldet</td>
+                                </tr>
+                                <tr>
+                                    <td>19.03.2023 15:30:10</td>
+                                    <td><span class="status status-warning">Warnung</span></td>
+                                    <td>Bot:AnnaBot</td>
+                                    <td>Bot hat mehrere Chat-Nachrichten in kurzer Zeit erhalten</td>
+                                </tr>
+                                <tr>
+                                    <td>19.03.2023 15:15:45</td>
+                                    <td><span class="status status-online">Info</span></td>
+                                    <td>System</td>
+                                    <td>Neuer Benutzer SarahSample hat sich registriert</td>
+                                </tr>
+                                <tr>
+                                    <td>19.03.2023 14:50:18</td>
+                                    <td><span class="status status-offline">Fehler</span></td>
+                                    <td>Bot:TomBot</td>
+                                    <td>Verbindung zum Server verloren, versuche erneut zu verbinden</td>
+                                </tr>
+                                <tr>
+                                    <td>19.03.2023 14:32:07</td>
+                                    <td><span class="status status-online">Info</span></td>
+                                    <td>System</td>
+                                    <td>Bot MaxBot1 wurde erstellt</td>
+                                </tr>
+                                <tr>
+                                    <td>19.03.2023 14:15:33</td>
+                                    <td><span class="status status-warning">Warnung</span></td>
+                                    <td>System</td>
+                                    <td>Hohe CPU-Auslastung: 85%</td>
+                                </tr>
+                                <tr>
+                                    <td>19.03.2023 13:45:22</td>
+                                    <td><span class="status status-online">Info</span></td>
+                                    <td>Bot:AnnaBot</td>
+                                    <td>Bot wurde erfolgreich gestartet</td>
+                                </tr>
+                                <tr>
+                                    <td>19.03.2023 13:30:10</td>
+                                    <td><span class="status status-online">Info</span></td>
+                                    <td>System</td>
+                                    <td>AnnaBeispiel hat sich angemeldet</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="tab-content" id="error-logs-content">
+                        <!-- Fehler-Logs-Tabelle -->
+                    </div>
+                    
+                    <div class="tab-content" id="warning-logs-content">
+                        <!-- Warnungs-Logs-Tabelle -->
+                    </div>
+                    
+                    <div class="tab-content" id="info-logs-content">
+                        <!-- Info-Logs-Tabelle -->
                     </div>
                 </div>
             </div>
@@ -417,311 +1044,198 @@
 
         <!-- Footer -->
         <div class="footer">
-            <p>Der fortschrittliche Minecraft Bot-Service - Administratorbereich</p>
+            <p>Der fortschrittliche Minecraft Bot-Service - Admin-Bereich</p>
             <div class="footer-links">
                 <a href="#">Nutzungsbedingungen</a>
                 <a href="#">Datenschutz</a>
+                <a href="#">Admin-Dokumentation</a>
             </div>
         </div>
     </div>
 
-    <script type="module">
-        import { initializeDatabase, getUserData } from './database.js';
-        
-        // Beim Laden der Seite prüfen, ob der Benutzer ein Admin ist
-        document.addEventListener('DOMContentLoaded', () => {
-            checkAdminAccess();
-            setupTabNavigation();
-        });
-        
-        // Admin/Console Tab-Navigation einrichten
-        function setupTabNavigation() {
-            const adminPanelTab = document.getElementById('admin-panel-tab');
-            const consoleTab = document.getElementById('console-tab');
-            const adminPanelContent = document.getElementById('admin-panel-content');
-            const consolePanelContent = document.getElementById('console-panel-content');
-            
-            // Admin-Panel Tab Click-Event
-            adminPanelTab.addEventListener('click', () => {
-                adminPanelTab.classList.add('active');
-                consoleTab.classList.remove('active');
-                adminPanelContent.classList.add('active');
-                adminPanelContent.style.display = 'block';
-                consolePanelContent.classList.remove('active');
-                consolePanelContent.style.display = 'none';
-            });
-            
-            // Console Tab Click-Event
-            consoleTab.addEventListener('click', () => {
-                consoleTab.classList.add('active');
-                adminPanelTab.classList.remove('active');
-                consolePanelContent.classList.add('active');
-                consolePanelContent.style.display = 'block';
-                adminPanelContent.classList.remove('active');
-                adminPanelContent.style.display = 'none';
-            });
-        }
-        
-        // Admin-Zugriff überprüfen
-        async function checkAdminAccess() {
-            try {
-                // Überprüfen, ob der Benutzer im localStorage gespeichert ist
-                const username = localStorage.getItem('username');
-                const userEmail = localStorage.getItem('userEmail');
-                
-                if (!username || !userEmail) {
-                    redirectToLogin('Du musst dich zuerst anmelden');
-                    return;
-                }
-                
-                // Benutzer aus dem Server abrufen
-                const response = await fetch(`/api/users/get-by-email?email=${encodeURIComponent(userEmail)}`);
-                const data = await response.json();
-                
-                if (!data.success || !data.user || data.user.role !== 'admin') {
-                    redirectToLogin('Du hast keinen Zugriff auf den Administratorbereich');
-                    return;
-                }
-                
-                // Admin-Bereich anzeigen
-                document.getElementById('admin-username').textContent = username;
-                loadDashboardData();
-                
-            } catch (error) {
-                console.error('Fehler beim Überprüfen des Admin-Zugriffs:', error);
-                redirectToLogin('Ein Fehler ist aufgetreten. Bitte versuche es erneut.');
+    <!-- Scripts -->
+    <script src="script.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Authentifizierung überprüfen
+            if (!checkAuthentication()) {
+                return;
             }
-        }
-        
-        // Weiterleitung zur Login-Seite
-        function redirectToLogin(message) {
-            alert(message);
-            window.location.href = 'index.html';
-        }
-        
-        // Daten für das Dashboard laden
-        async function loadDashboardData() {
-            try {
-                const userEmail = localStorage.getItem('userEmail');
-                
-                // Statistiken laden
-                const statsResponse = await fetch(`/api/admin/stats?admin_email=${encodeURIComponent(userEmail)}`);
-                const statsData = await statsResponse.json();
-                
-                if (statsData.success) {
-                    document.getElementById('user-count').textContent = statsData.stats.userCount || '0';
-                    document.getElementById('active-bots').textContent = statsData.stats.activeBots || '0';
-                    document.getElementById('server-uptime').textContent = statsData.stats.uptime || '0h';
-                    document.getElementById('logins-today').textContent = statsData.stats.loginsToday || '0';
-                }
-                
-                // Benutzerliste laden
-                const usersResponse = await fetch(`/api/admin/users?admin_email=${encodeURIComponent(userEmail)}`);
-                const usersData = await usersResponse.json();
-                
-                if (usersData.success) {
-                    renderUserList(usersData.users);
-                    // Event-Listener für Benutzeraktionen hinzufügen
-                    addUserActionListeners();
-                }
-                
-                // Login-Logs laden
-                const logsResponse = await fetch(`/api/admin/logs?admin_email=${encodeURIComponent(userEmail)}`);
-                const logsData = await logsResponse.json();
-                
-                if (logsData.success) {
-                    renderLogs(logsData.logs);
-                }
-                
-            } catch (error) {
-                console.error('Fehler beim Laden der Dashboard-Daten:', error);
-                alert('Fehler beim Laden der Dashboard-Daten. Bitte aktualisiere die Seite.');
-            }
-        }
-        
-        // Event-Listener für Benutzeraktionen hinzufügen
-        function addUserActionListeners() {
-            const userEmail = localStorage.getItem('userEmail');
             
-            // Event-Listener für Verifizierungsschaltflächen
-            document.querySelectorAll('.verify-btn:not([disabled])').forEach(btn => {
-                btn.addEventListener('click', async () => {
-                    const targetEmail = btn.getAttribute('data-email');
+            // Admin-Namen anzeigen
+            const adminName = document.getElementById('admin-name');
+            if (adminName) {
+                adminName.textContent = localStorage.getItem('username') || 'Administrator';
+            }
+            
+            // Navigation
+            const navItems = document.querySelectorAll('.admin-nav-item');
+            const pages = document.querySelectorAll('.admin-page');
+            
+            navItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const pageName = this.getAttribute('data-page');
                     
-                    try {
-                        const response = await fetch('/api/admin/verify-user', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                admin_email: userEmail,
-                                user_email: targetEmail
-                            })
-                        });
-                        
-                        const data = await response.json();
-                        
-                        if (data.success) {
-                            alert(data.message);
-                            loadDashboardData(); // Dashboard aktualisieren
-                        } else {
-                            alert('Fehler: ' + (data.error || 'Unbekannter Fehler'));
+                    // Aktive Klasse von allen Navigation-Items entfernen
+                    navItems.forEach(navItem => navItem.classList.remove('active'));
+                    
+                    // Aktive Klasse zum geklickten Item hinzufügen
+                    this.classList.add('active');
+                    
+                    // Alle Seiten ausblenden
+                    pages.forEach(page => page.classList.remove('active'));
+                    
+                    // Ausgewählte Seite anzeigen
+                    document.getElementById(`${pageName}-page`).classList.add('active');
+                });
+            });
+            
+            // Tab-Funktionalität
+            const tabButtons = document.querySelectorAll('.admin-tab');
+            
+            tabButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const tabName = this.getAttribute('data-tab');
+                    const tabContainer = this.parentElement;
+                    const contentContainer = tabContainer.nextElementSibling.parentElement;
+                    
+                    // Aktive Klasse von allen Tabs in diesem Container entfernen
+                    tabContainer.querySelectorAll('.admin-tab').forEach(tab => tab.classList.remove('active'));
+                    
+                    // Aktive Klasse zum geklickten Tab hinzufügen
+                    this.classList.add('active');
+                    
+                    // Alle Inhalte in diesem Container ausblenden
+                    contentContainer.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                    
+                    // Ausgewählten Inhalt anzeigen
+                    document.getElementById(`${tabName}-content`).classList.add('active');
+                });
+            });
+            
+            // Chart.js-Diagramme initialisieren
+            const activityCtx = document.getElementById('activity-chart').getContext('2d');
+            const systemCtx = document.getElementById('system-chart').getContext('2d');
+            
+            // Aktivitätsdiagramm
+            const activityChart = new Chart(activityCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'],
+                    datasets: [{
+                        label: 'Neue Registrierungen',
+                        data: [3, 5, 2, 4, 7, 8, 4],
+                        borderColor: '#1eff00',
+                        backgroundColor: 'rgba(30, 255, 0, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }, {
+                        label: 'Bot-Starts',
+                        data: [8, 12, 10, 15, 18, 25, 14],
+                        borderColor: '#00a0ff',
+                        backgroundColor: 'rgba(0, 160, 255, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#e0e0e0'
+                            }
                         }
-                    } catch (error) {
-                        console.error('Fehler beim Verifizieren des Benutzers:', error);
-                        alert('Ein Fehler ist aufgetreten. Bitte versuche es erneut.');
-                    }
-                });
-            });
-            
-            // Event-Listener für Sperr-/Entsperrschaltflächen
-            document.querySelectorAll('.ban-btn').forEach(btn => {
-                btn.addEventListener('click', async () => {
-                    const targetEmail = btn.getAttribute('data-email');
-                    const isBanned = btn.classList.contains('active');
-                    
-                    // Wenn der Benutzer gesperrt werden soll, nach einem Grund fragen
-                    let banReason = '';
-                    if (!isBanned) {
-                        banReason = prompt('Gib bitte einen Grund für die Sperrung ein:');
-                        if (banReason === null) return; // Benutzer hat abgebrochen
-                    }
-                    
-                    try {
-                        const response = await fetch('/api/admin/toggle-ban', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
+                    },
+                    scales: {
+                        x: {
+                            ticks: {
+                                color: '#a0a0a0'
                             },
-                            body: JSON.stringify({
-                                admin_email: userEmail,
-                                user_email: targetEmail,
-                                ban_status: !isBanned,
-                                ban_reason: banReason
-                            })
-                        });
-                        
-                        const data = await response.json();
-                        
-                        if (data.success) {
-                            alert(data.message);
-                            loadDashboardData(); // Dashboard aktualisieren
-                        } else {
-                            alert('Fehler: ' + (data.error || 'Unbekannter Fehler'));
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        },
+                        y: {
+                            ticks: {
+                                color: '#a0a0a0'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
                         }
-                    } catch (error) {
-                        console.error('Fehler beim Ändern des Sperrstatus:', error);
-                        alert('Ein Fehler ist aufgetreten. Bitte versuche es erneut.');
                     }
-                });
-            });
-        }
-        
-        // Benutzerliste rendern
-        function renderUserList(users) {
-            const userList = document.getElementById('user-list');
-            userList.innerHTML = '';
-            
-            // Mit echten Benutzerdaten arbeiten
-            users.forEach(user => {
-                const userItem = document.createElement('div');
-                userItem.className = 'user-item';
-                
-                // Banngrund-Text erstellen, wenn der Benutzer gesperrt ist
-                const banReasonText = user.banned && user.ban_reason 
-                    ? `<div style="font-size: 0.8rem; color: #ff3838;">Grund: ${user.ban_reason}</div>` 
-                    : '';
-                
-                userItem.innerHTML = `
-                    <div class="user-info">
-                        <strong>${user.username}</strong> (${user.email})
-                        <div style="font-size: 0.8rem; color: #a0a0a0;">
-                            Rolle: ${user.role === 'admin' ? 'Administrator' : 'Benutzer'} | 
-                            Status: ${user.verified ? 'Verifiziert' : 'Nicht verifiziert'}
-                            ${user.banned ? ' | <span style="color: #ff3838;">Gesperrt</span>' : ''}
-                        </div>
-                        ${banReasonText}
-                    </div>
-                    <div class="user-actions">
-                        <button class="verify-btn" data-email="${user.email}" ${user.verified ? 'disabled' : ''}>
-                            ${user.verified ? 'Verifiziert' : 'Verifizieren'}
-                        </button>
-                        <button class="ban-btn ${user.banned ? 'active' : ''}" data-email="${user.email}">
-                            ${user.banned ? 'Entsperren' : 'Sperren'}
-                        </button>
-                    </div>
-                `;
-                userList.appendChild(userItem);
-            });
-        }
-        
-        // Logs rendern
-        function renderLogs(logs) {
-            const logsList = document.getElementById('login-logs');
-            logsList.innerHTML = '';
-            
-            // Echte Logs anzeigen
-            if (logs && logs.length > 0) {
-                logs.forEach(log => {
-                    const logItem = document.createElement('div');
-                    logItem.className = 'log-item';
-                    logItem.innerHTML = `
-                        <strong>${log.date}</strong> - Benutzer <span>${log.username}</span> hat sich angemeldet
-                        ${log.ip ? `<div style="font-size: 0.8rem; color: #777;">IP: ${log.ip}</div>` : ''}
-                    `;
-                    logsList.appendChild(logItem);
-                });
-            } else {
-                // Fallback, wenn keine Logs vorhanden sind
-                logsList.innerHTML = '<div class="log-item">Keine Login-Protokolle vorhanden</div>';
-            }
-        }
-        
-        // Tab-Wechsel-Funktion
-        document.querySelectorAll('.tab-button').forEach(button => {
-            button.addEventListener('click', () => {
-                // Alle Tabs deaktivieren
-                document.querySelectorAll('.tab-button').forEach(btn => {
-                    btn.classList.remove('active');
-                });
-                
-                // Alle Tab-Inhalte ausblenden
-                document.querySelectorAll('.tab-content').forEach(content => {
-                    content.style.display = 'none';
-                });
-                
-                // Angeklickten Tab aktivieren
-                button.classList.add('active');
-                
-                // Entsprechenden Tab-Inhalt anzeigen
-                const tabId = button.getAttribute('data-tab');
-                document.getElementById(tabId).style.display = 'flex';
-                
-                // Bot-Tab-Daten laden, wenn Bot-Tab geöffnet wird
-                if (tabId === 'bot-tab') {
-                    loadBotData();
                 }
             });
-        });
-        
-        // Bot-Daten laden (für den Bot-Tab)
-        function loadBotData() {
-            // Simulierte Daten für die Demonstration
-            document.getElementById('total-bots').textContent = '5';
-            document.getElementById('connected-bots').textContent = '2';
-            document.getElementById('servers-count').textContent = '2';
-            document.getElementById('total-uptime').textContent = '24h';
             
-            // In einer echten Anwendung würden wir hier Daten vom Server laden
-        }
-        
-        // Abmelden-Link
-        document.getElementById('logout-link').addEventListener('click', (e) => {
-            e.preventDefault();
-            localStorage.removeItem('username');
-            localStorage.removeItem('userEmail');
-            window.location.href = 'index.html';
+            // System-Diagramm
+            const systemChart = new Chart(systemCtx, {
+                type: 'line',
+                data: {
+                    labels: Array.from({length: 12}, (_, i) => i * 5 + ':00'),
+                    datasets: [{
+                        label: 'CPU-Auslastung (%)',
+                        data: [25, 30, 45, 60, 50, 40, 35, 55, 70, 65, 40, 30],
+                        borderColor: '#ff6a00',
+                        backgroundColor: 'rgba(255, 106, 0, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }, {
+                        label: 'Speicher-Auslastung (%)',
+                        data: [40, 45, 50, 55, 60, 65, 70, 75, 70, 65, 60, 55],
+                        borderColor: '#ff00ea',
+                        backgroundColor: 'rgba(255, 0, 234, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#e0e0e0'
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: {
+                                color: '#a0a0a0'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        },
+                        y: {
+                            ticks: {
+                                color: '#a0a0a0'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            min: 0,
+                            max: 100
+                        }
+                    }
+                }
+            });
+            
+            // Chart-Controls
+            const chartControls = document.querySelectorAll('.chart-control');
+            
+            chartControls.forEach(control => {
+                control.addEventListener('click', function() {
+                    // Aktive Klasse von allen Controls in diesem Container entfernen
+                    this.parentElement.querySelectorAll('.chart-control').forEach(btn => btn.classList.remove('active'));
+                    
+                    // Aktive Klasse zum geklickten Control hinzufügen
+                    this.classList.add('active');
+                });
+            });
         });
     </script>
 </body>
