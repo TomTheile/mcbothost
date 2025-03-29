@@ -1,5 +1,5 @@
 // Firebase-ähnliche Konfiguration (Simuliert Firebase-Funktionalität)
-export const firebaseConfig = {
+const firebaseConfig = {
     apiKey: "simulierte-api-key",
     authDomain: "simuliert.example.com",
     projectId: "simulierte-project-id",
@@ -12,13 +12,13 @@ export const firebaseConfig = {
 const users = {};
 
 // Initialisierungsfunktion (simuliert die Einrichtung von Firebase)
-export function initializeFirebase() {
+function initializeFirebase() {
     console.log("Firebase simuliert initialisiert");
     return { success: true };
 }
 
 // Benutzerregistrierung (simuliert)
-export async function registerUser(email, password, username) {
+async function registerUser(email, password, username) {
     // Simuliert eine asynchrone Operation (wie bei Firebase Auth)
     return new Promise((resolve) => {
         console.log(`Simuliere Registrierung für: ${email}, Benutzername: ${username}`);
@@ -49,7 +49,7 @@ export async function registerUser(email, password, username) {
 }
 
 // Benutzeranmeldung (simuliert)
-export async function loginUser(email, password) {
+async function loginUser(email, password) {
     // Simuliert eine asynchrone Operation (wie bei Firebase Auth)
     return new Promise((resolve) => {
         console.log(`Simuliere Anmeldung für: ${email}`);
@@ -98,7 +98,7 @@ export async function loginUser(email, password) {
 }
 
 // E-Mail-Verifizierung (simuliert)
-export async function sendVerificationEmail(userId, email) {
+async function sendVerificationEmail(userId, email) {
     // In einer echten Implementierung würde hier Firebase Cloud Functions verwendet werden
     console.log(`Sending verification email to: ${email} for user: ${userId}`);
     
@@ -130,7 +130,7 @@ export async function sendVerificationEmail(userId, email) {
 }
 
 // Benutzerdaten abrufen (simuliert)
-export async function getUserData(userId) {
+async function getUserData(userId) {
     return new Promise((resolve) => {
         console.log(`Simuliere Abfrage der Benutzerdaten für UserID: ${userId}`);
         
@@ -173,7 +173,7 @@ export async function getUserData(userId) {
 }
 
 // Passwort zurücksetzen (simuliert)
-export async function sendPasswordResetEmail(email) {
+async function sendPasswordResetEmail(email) {
     return new Promise((resolve) => {
         console.log(`Simuliere Passwort-Zurücksetzungs-E-Mail für: ${email}`);
         
@@ -185,7 +185,7 @@ export async function sendPasswordResetEmail(email) {
 }
 
 // Passwort aktualisieren (simuliert)
-export async function updatePassword(email, newPassword) {
+async function updatePassword(email, newPassword) {
     return new Promise((resolve) => {
         console.log(`Simuliere Passwort-Aktualisierung für: ${email}`);
         
@@ -206,3 +206,14 @@ export async function updatePassword(email, newPassword) {
         }
     });
 }
+
+module.exports = {
+    firebaseConfig,
+    initializeFirebase,
+    registerUser,
+    loginUser,
+    sendVerificationEmail,
+    getUserData,
+    sendPasswordResetEmail,
+    updatePassword
+};
