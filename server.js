@@ -357,24 +357,29 @@ app.post('/api/users/login', async (req, res) => {
         });
     }
 
-    let db;
+    console.log("Login-Versuch für:", email);
+
     try {
-        db = readDatabase();
+        const db = readDatabase();
         if (!db || !db.users) {
-            console.error("Keine Benutzer in der Datenbank gefunden");
+            console.error("Datenbank ist leer oder beschädigt");
             return res.status(500).json({
                 success: false,
-                error: 'Datenbankfehler. Bitte versuche es später erneut.'
+                error: 'Login temporär nicht möglich. Bitte versuche es später erneut.'
             });
         }
-        console.log("Datenbankverbindung erfolgreich");
-    } catch (error) {
-        console.error("Datenbankfehler:", error);
-        return res.status(500).json({
-            success: false,
-            error: 'Datenbankfehler. Bitte versuche es später erneut.'
-        });
-    }
+
+        // Überprüfe ob der Benutzer existiert
+        const user = db.users[email];
+        if (!user) {
+            console.log("Benutzer nicht gefunden:", email);
+            return res.status(401).json({
+                success: false,
+                error: 'Ungültige E-Mail oder Passwort'
+            });
+        }
+
+        console.log("Benutzer gefunden, überprüfe Passwort");
 
     // Benutzer suchen
     const user = db.users[email];
@@ -1312,8 +1317,9 @@ app.get('/api/minecraft/bot-status', (req, res) => {
 // Dotenv-Konfiguration laden
 dotenv.config();
 
-// Server starten
-app.listen(PORT, '0.0.0.0', (err) => {
+// Server starten 
+const host = process.env.NODE_ENV === 'production' ? '0.0.0.0' : 'localhost';
+app.listen(PORT, host, (err) => {
     if (err) {
         console.error('Fehler beim Starten des Servers:', err);
         process.exit(1);
