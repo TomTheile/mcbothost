@@ -98,51 +98,27 @@ export async function loginUser(email, password) {
                 return;
             }
             
-            // Wenn nicht vorhanden, dann Server anfragen
-            fetch('/api/users/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ email, password }),
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Wenn ein Admin-Login eine Bestätigung erfordert
-                    if (data.approval_required) {
-                        resolve({
-                            success: false,
-                            pendingApproval: true,
-                            message: data.message || "Admin-Login erfordert eine E-Mail-Bestätigung. Bitte prüfe deine E-Mails."
-                        });
-                        return;
-                    }
-                    
-                    // Benutzer im Speicher aktualisieren
-                    inMemoryUsers[email] = {
-                        ...data.user,
-                        password: password
-                    };
-                    
-                    // E-Mail-Adresse im localStorage speichern für die Admin-Seite
-                    localStorage.setItem('userEmail', email);
-                    
-                    resolve(data);
-                } else {
-                    resolve({ 
-                        success: false, 
-                        error: data.error || "Anmeldung fehlgeschlagen"
-                    });
-                }
-            })
-            .catch(error => {
-                console.error("Fehler bei Anmeldung:", error);
+            // Direkter Datenbankzugriff statt Server-Anfrage
+            const db = require('./database.json'); //This line assumes database.json exists in the same directory.  Error handling might be needed for production.
+            if (db.users && db.users[email] && db.users[email].password === password) {
+                // Benutzer gefunden und Passwort korrekt
+                localStorage.setItem('userEmail', email);
                 resolve({ 
-                    success: false, 
-                    error: "Verbindungsfehler beim Anmelden"
+                    success: true, 
+                    user: {
+                        uid: db.users[email].uid,
+                        email: email,
+                        username: db.users[email].username,
+                        verified: db.users[email].verified,
+                        role: db.users[email].role || 'user'
+                    }
                 });
-            });
+            } else {
+                resolve({
+                    success: false,
+                    error: "Ungültige E-Mail oder Passwort"
+                });
+            }
         }, 800);
     });
 }
