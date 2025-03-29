@@ -271,7 +271,7 @@ app.get('/api/users/verify/:token', (req, res) => {
 // Minecraft-Bot-API-Routen
 app.post('/api/minecraft/start-bot', (req, res) => {
     res.setHeader('Content-Type', 'application/json');
-    const { username, serverIp, serverPort, mcVersion } = req.body;
+    const { username, serverIp, mcVersion } = req.body;
 
     if (!username || !serverIp) {
         return res.status(400).json({
@@ -280,21 +280,12 @@ app.post('/api/minecraft/start-bot', (req, res) => {
         });
     }
 
-    // Validiere Server-IP Format (erweiterte Regex für mehr Domains)
-    const ipRegex = /^[a-zA-Z0-9][a-zA-Z0-9-_.]*[a-zA-Z0-9]$/;
-    if (!ipRegex.test(serverIp) && serverIp !== 'localhost') {
+    // Validiere Server-IP Format (erweiterte Regex für mehr Domains und optional Port)
+    const serverRegex = /^[a-zA-Z0-9][a-zA-Z0-9-_.]*[a-zA-Z0-9](:\d{1,5})?$/;
+    if (!serverRegex.test(serverIp) && !serverIp.startsWith('localhost')) {
         return res.status(400).json({
             success: false,
             error: 'Ungültige Server-IP'
-        });
-    }
-
-    // Validiere Port
-    const port = parseInt(serverPort) || 25565;
-    if (port < 1 || port > 65535) {
-        return res.status(400).json({
-            success: false,
-            error: 'Ungültiger Port (muss zwischen 1 und 65535 liegen)'
         });
     }
 
