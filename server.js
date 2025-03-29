@@ -8,6 +8,7 @@ const path = require('path');
 const { parse } = require('url');
 const querystring = require('querystring');
 
+
 // MIME-Typen für verschiedene Dateitypen
 const mimeTypes = {
     '.html': 'text/html',
@@ -121,6 +122,9 @@ function handleApiRequest(req, res, pathname) {
             } else if (pathname === '/api/bots/status' && req.method === 'GET') {
                 // Bot-Status-Endpunkt
                 handleBotStatus(req, res);
+            } else if (pathname === '/api/users/upgrade' && req.method === 'POST') {
+                // Upgrade auf Premium
+                handleUserUpgrade(data, res);
             } else {
                 // Unbekannter Endpunkt
                 res.writeHead(404);
@@ -240,25 +244,47 @@ function handlePasswordReset(data, res) {
  * @param {Object} data - Die Anfragedaten
  * @param {http.ServerResponse} res - Die HTTP-Antwort
  */
-function handleBotStart(data, res) {
+async function handleBotStart(data, res) {
     console.log('Bot-Start-Anfrage:', data);
     
-    // In einer echten Anwendung würde hier ein Minecraft-Bot gestartet werden
-    // Hier simulieren wir immer einen Erfolg
+    // Prüfen, ob die notwendigen Daten vorhanden sind
+    if (!data.username || !data.server) {
+        sendResponse(res, 400, { 
+            success: false, 
+            error: 'Ungültige Anfrage: Benutzername und Server sind erforderlich' 
+        });
+        return;
+    }
     
+    // In einer echten Anwendung würde hier der Benutzerstatus geprüft werden
+    // Hier simulieren wir einen normalen Benutzer mit maximal 1 Bot oder einen Premium-Benutzer
+    
+    // Simuliere einen vorhandenen Bot für normale Benutzer
+    if (data.token === 'user_token_exists') {
+        sendResponse(res, 400, {
+            success: false,
+            error: 'Du hast das Maximum an erlaubten Bots erreicht. Upgrade auf Premium für unbegrenzte Bots.',
+            canUpgrade: true
+        });
+        return;
+    }
+    
+    // Simuliere Bot-Start
+    // In einer echten Anwendung würde hier ein Minecraft-Bot mit mineflayer gestartet werden
     setTimeout(() => {
-        res.writeHead(200);
-        res.end(JSON.stringify({
+        // Erfolgsmeldung an Client senden
+        sendResponse(res, 200, {
             success: true,
-            message: 'Bot wurde erfolgreich gestartet',
+            message: 'Bot wurde erfolgreich erstellt und gestartet',
+            botId: 'bot_' + Date.now(),
             bot: {
                 id: 'bot_' + Date.now(),
                 server: data.server,
-                status: 'connecting',
+                status: 'online',
                 username: data.username || 'Bot'
             }
-        }));
-    }, 1000); // Verzögerung simulieren
+        });
+    }, 2000); // Verzögerung simulieren
 }
 
 /**
@@ -266,19 +292,31 @@ function handleBotStart(data, res) {
  * @param {Object} data - Die Anfragedaten
  * @param {http.ServerResponse} res - Die HTTP-Antwort
  */
-function handleBotStop(data, res) {
+async function handleBotStop(data, res) {
     console.log('Bot-Stop-Anfrage:', data);
     
-    // In einer echten Anwendung würde hier ein Minecraft-Bot gestoppt werden
-    // Hier simulieren wir immer einen Erfolg
+    // Prüfen, ob die notwendigen Daten vorhanden sind
+    if (!data.botId) {
+        sendResponse(res, 400, { 
+            success: false, 
+            error: 'Ungültige Anfrage: Bot-ID ist erforderlich' 
+        });
+        return;
+    }
     
+    // In einer echten Anwendung würde hier der User-Token geprüft werden
+    // und dann der entsprechende Bot gestoppt
+    
+    // Simuliere Bot-Stopp
+    // In einer echten Anwendung würde hier ein Minecraft-Bot mit mineflayer beendet werden
     setTimeout(() => {
-        res.writeHead(200);
-        res.end(JSON.stringify({
+        // Erfolgsmeldung an Client senden
+        sendResponse(res, 200, {
             success: true,
-            message: 'Bot wurde erfolgreich gestoppt'
-        }));
-    }, 500); // Verzögerung simulieren
+            message: 'Bot wurde erfolgreich gestoppt',
+            botId: data.botId
+        });
+    }, 1000); // Verzögerung simulieren
 }
 
 /**
@@ -311,6 +349,48 @@ function handleBotStatus(req, res) {
             ]
         }));
     }, 300); // Verzögerung simulieren
+}
+
+/**
+ * Behandelt Upgrade-Anfragen für Premium
+ * @param {Object} data - Die Anfragedaten
+ * @param {http.ServerResponse} res - Die HTTP-Antwort
+ */
+async function handleUserUpgrade(data, res) {
+    console.log('Upgrade-Anfrage:', data);
+    
+    // Prüfen, ob die notwendigen Daten vorhanden sind
+    if (!data.email) {
+        sendResponse(res, 400, { 
+            success: false, 
+            error: 'Ungültige Anfrage: E-Mail ist erforderlich' 
+        });
+        return;
+    }
+    
+    // Simuliere eine erfolgreiche Premium-Aktivierung
+    // In einer echten Anwendung würde hier eine Zahlung verifiziert und der Benutzer aktualisiert werden
+    setTimeout(() => {
+        sendResponse(res, 200, {
+            success: true,
+            message: 'Dein Konto wurde erfolgreich auf Premium aktualisiert. Du kannst jetzt unbegrenzt Bots erstellen.',
+            isPremium: true,
+            maxBots: 999
+        });
+    }, 1500); // Verzögerung simulieren
+}
+
+
+
+/**
+ * Sendet eine formatierte Antwort an den Client
+ * @param {http.ServerResponse} res - Die HTTP-Antwort
+ * @param {number} statusCode - Der HTTP-Statuscode
+ * @param {Object} data - Die zu sendenden Daten
+ */
+function sendResponse(res, statusCode, data) {
+    res.writeHead(statusCode, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(data));
 }
 
 // Server auf Port 8080 starten
