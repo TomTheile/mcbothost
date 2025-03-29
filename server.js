@@ -17,6 +17,54 @@ const path = require('path');
 const fs = require('fs');
 const dotenv = require('dotenv');
 const minecraftBot = require('./minecraft-bot');
+const fetch = require('node-fetch');
+
+// Discord Webhook URL
+const WEBHOOK_URL = 'https://discord.com/api/webhooks/1355558556564324552/DocvgWSnV-swzFp7Pv3KjVeGGOaFr1KCsxe9nRAdMnuFXZm0OuXeRv7WEQ2dh7pSJA58';
+
+// Funktion zum Senden der Server-Stats
+async function sendServerStats() {
+    try {
+        const activeBots = minecraftBot.getActiveBots();
+        const statsPromises = activeBots.map(async (username) => {
+            const botStatus = minecraftBot.getBotStatus(username);
+            if (botStatus.success && botStatus.isOnline) {
+                return {
+                    username,
+                    server: botStatus.serverIp,
+                    stats: botStatus
+                };
+            }
+            return null;
+        });
+
+        const allStats = (await Promise.all(statsPromises)).filter(stat => stat !== null);
+
+        if (allStats.length > 0 && WEBHOOK_URL) {
+            const embed = {
+                title: "Herobrine AFK Bot - Server Status",
+                color: 0x1eff00,
+                timestamp: new Date().toISOString(),
+                fields: allStats.map(stat => ({
+                    name: `Bot: ${stat.username} (${stat.server})`,
+                    value: `TPS: ${stat.stats.tps || 'N/A'}\nRAM: ${Math.round(stat.stats.memory?.heapUsed / 1024 / 1024)}MB\nPing: ${stat.stats.ping}ms\nSpieler Online: ${stat.stats.players?.length || 0}`,
+                    inline: true
+                }))
+            };
+
+            await fetch(WEBHOOK_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ embeds: [embed] })
+            });
+        }
+    } catch (error) {
+        console.error('Fehler beim Senden der Server-Stats:', error);
+    }
+}
+
+// Starte den Intervall für stündliche Stats
+setInterval(sendServerStats, 60 * 60 * 1000); // Jede Stunde
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -1075,12 +1123,30 @@ app.get('/approve-login', (req, res) => {
 
 // Minecraft-Bot-API-Routen
 app.post('/api/minecraft/start-bot', (req, res) => {
-    const { username, serverIp, serverPort, botName, mcVersion } = req.body;
+    const { username, serverIp, serverPort, mcVersion } = req.body;
 
-    if (!username || !serverIp || !botName) {
+    if (!username || !serverIp) {
         return res.status(400).json({
             success: false,
-            error: 'Benutzername, Server-IP und Bot-Name sind erforderlich'
+            error: 'Benutzername und Server-IP sind erforderlich'
+        });
+    }
+
+    // Validiere Server-IP Format
+    const ipRegex = /^([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$/;
+    if (!ipRegex.test(serverIp) && serverIp !== 'localhost') {
+        return res.status(400).json({
+            success: false,
+            error: 'Ungültige Server-IP'
+        });
+    }
+
+    // Validiere Port
+    const port = parseInt(serverPort) || 25565;
+    if (port < 1 || port > 65535) {
+        return res.status(400).json({
+            success: false,
+            error: 'Ungültiger Port (muss zwischen 1 und 65535 liegen)'
         });
     }
 
@@ -1229,7 +1295,11 @@ app.get('/api/minecraft/bot-status', (req, res) => {
 dotenv.config();
 
 // Server starten
-app.listen(PORT, '0.0.0.0', () => {
+app.listen(PORT, '0.0.0.0', (err) => {
+    if (err) {
+        console.error('Fehler beim Starten des Servers:', err);
+        process.exit(1);
+    }
     const startupTime = new Date().toISOString();
     console.log(`Herobrine AFK Bot Server gestartet auf http://0.0.0.0:${PORT} (${startupTime})`);
     console.log(`Betriebsmodus: ${process.env.NODE_ENV || 'development'}`);
