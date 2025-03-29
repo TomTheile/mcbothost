@@ -311,20 +311,27 @@ app.post('/api/minecraft/start-bot', (req, res) => {
         console.log(`Bot wird gestartet - Benutzer: ${username}, Server: ${serverIp}:${serverPort}`);
 
         // Bot starten
-        const result = minecraftBot.startBot(botConfig);
-
-        // Ergebnis zurückgeben
-        if (result.success) {
-            res.json({
-                success: true,
-                message: result.message
-            });
-        } else {
-            res.status(400).json({
+        minecraftBot.startBot(botConfig)
+        .then(result => {
+            if (result.success) {
+                res.json({
+                    success: true,
+                    message: result.message,
+                    botName: `${username}_Bot`
+                });
+            } else {
+                res.status(400).json({
+                    success: false,
+                    error: result.error || 'Fehler beim Verbinden'
+                });
+            }
+        })
+        .catch(error => {
+            res.status(500).json({
                 success: false,
-                error: result.error
+                error: `Verbindungsfehler: ${error.message}`
             });
-        }
+        });
     } catch (error) {
         console.error('Fehler beim Starten des Minecraft-Bots:', error);
         res.status(500).json({
