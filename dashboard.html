@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Herobrine AFK Bot - Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header (Top) -->
+        <div class="header">
+            <h1>Herobrine AFK Bot</h1>
+            <div class="quick-links">
+                <a href="index.html">Abmelden</a>
+                <a href="#">Einstellungen</a>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <!-- Bot Control Panel -->
+            <div class="control-panel green-border">
+                <h2>Bot-Steuerung</h2>
+                <div class="user-info">
+                    <p>Willkommen, <span id="username">Benutzer</span>!</p>
+                    <p>Status: <span id="bot-status" class="status-offline">Offline</span></p>
+                </div>
+
+                <div class="server-form">
+                    <div class="form-group">
+                        <label>Minecraft Server IP</label>
+                        <input type="text" id="server-ip" placeholder="z.B. play.hypixel.net">
+                    </div>
+                    <div class="form-group">
+                        <label>Server Port (Optional)</label>
+                        <input type="number" id="server-port" placeholder="25565" value="25565">
+                    </div>
+                    <div class="form-group">
+                        <label>Bot Name</label>
+                        <input type="text" id="bot-name" placeholder="Gib deinem Bot einen Namen">
+                    </div>
+                    <div class="form-group">
+                        <label>Minecraft Version</label>
+                        <select id="mc-version">
+                            <option value="1.8">1.8</option>
+                            <option value="1.12">1.12</option>
+                            <option value="1.16">1.16</option>
+                            <option value="1.17">1.17</option>
+                            <option value="1.18">1.18</option>
+                            <option value="1.19">1.19</option>
+                            <option value="1.20">1.20</option>
+                            <option value="1.21" selected>1.21.4 (empfohlen)</option>
+                        </select>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="action-btn start-btn" id="start-bot">Bot starten</button>
+                        <button class="action-btn stop-btn" id="stop-bot" disabled>Bot stoppen</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bot Console -->
+            <div class="bot-console green-border">
+                <div class="console-header">
+                    <h3>Bot Konsole</h3>
+                    <button class="clear-console" id="clear-console">Löschen</button>
+                </div>
+                <div class="console-window" id="console-window">
+                    <div class="console-line">System > Willkommen bei der Herobrine AFK Bot Konsole</div>
+                    <div class="console-line">System > Gib eine Minecraft Server IP ein und drücke "Bot starten"</div>
+                </div>
+                <div class="console-input">
+                    <input type="text" id="command-input" placeholder="Befehl eingeben..." disabled>
+                    <button id="send-command" disabled>Senden</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bot Stats Panel -->
+        <div class="stats-panel green-border">
+            <h3>Bot Statistiken</h3>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-label">Online Zeit</div>
+                    <div class="stat-value" id="online-time">00:00:00</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Position</div>
+                    <div class="stat-value" id="position">X: 0 Y: 0 Z: 0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Gesundheit</div>
+                    <div class="stat-value">
+                        <div class="health-bar">
+                            <div class="health-fill" id="health-fill" style="width: 100%;"></div>
+                        </div>
+                        <span id="health-value">20/20</span>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Nahrung</div>
+                    <div class="stat-value">
+                        <div class="food-bar">
+                            <div class="food-fill" id="food-fill" style="width: 100%;"></div>
+                        </div>
+                        <span id="food-value">20/20</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>Der fortschrittliche Minecraft Bot-Service</p>
+            <div class="footer-links">
+                <a href="#">Nutzungsbedingungen</a>
+                <a href="#">Datenschutz</a>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="dashboard.js"></script>
+</body>
+</html>
