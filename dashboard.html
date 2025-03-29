@@ -587,6 +587,7 @@
                         <h2>Dein Dashboard</h2>
                         <div class="action-buttons">
                             <button class="action-btn" id="create-bot-btn">Neuen Bot erstellen</button>
+                            <button class="action-btn secondary" id="upgrade-account-btn" style="background-color: #ff9500; color: black; border: none;">Premium kaufen (3€)</button>
                             <button class="action-btn secondary" id="refresh-dashboard">Aktualisieren</button>
                         </div>
                     </div>
@@ -824,6 +825,7 @@
             const cancelCreateBot = document.getElementById('cancel-create-bot');
             const submitCreateBot = document.getElementById('submit-create-bot');
             const refreshDashboardBtn = document.getElementById('refresh-dashboard');
+            const upgradeAccountBtn = document.getElementById('upgrade-account-btn');
             const navItems = document.querySelectorAll('.nav-item');
             const dashboardPages = document.querySelectorAll('.dashboard-page');
             
@@ -865,6 +867,9 @@
                 }
                 
                 // API-Anfrage zum Erstellen eines Bots
+                // Token aus dem localStorage holen
+                const token = localStorage.getItem('token');
+                
                 fetch('/api/bots/start', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -874,7 +879,8 @@
                         port: parseInt(port),
                         version,
                         autoReconnect,
-                        antiAFK
+                        antiAFK,
+                        token // Token für die Authentifizierung
                     })
                 })
                 .then(response => response.json())
@@ -892,6 +898,13 @@
                     } else {
                         // Fehler anzeigen
                         showToast(data.error || 'Fehler beim Erstellen des Bots', 'error');
+                        
+                        // Wenn der Benutzer das Bot-Limit erreicht hat und upgraden kann
+                        if (data.canUpgrade) {
+                            if (confirm('Du hast das Maximum an kostenlosen Bots erreicht. Möchtest du auf Premium upgraden, um unbegrenzte Bots zu erstellen?')) {
+                                window.location.href = 'payment.html';
+                            }
+                        }
                     }
                 })
                 .catch(error => {
@@ -901,6 +914,11 @@
             });
             
             refreshDashboardBtn.addEventListener('click', refreshDashboard);
+            
+            // Premium-Button-Handler
+            upgradeAccountBtn.addEventListener('click', function() {
+                window.location.href = 'payment.html';
+            });
             
             // Navigation zwischen den Seiten
             navItems.forEach(item => {
@@ -950,10 +968,16 @@
          */
         function startBot(botId) {
             // API-Anfrage zum Starten eines Bots
+            // Token aus dem localStorage für die Authentifizierung holen
+            const token = localStorage.getItem('token');
+            
             fetch('/api/bots/start', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id: botId })
+                body: JSON.stringify({ 
+                    id: botId,
+                    token: token
+                })
             })
             .then(response => response.json())
             .then(data => {
@@ -976,10 +1000,16 @@
          */
         function stopBot(botId) {
             // API-Anfrage zum Stoppen eines Bots
+            // Token aus dem localStorage für die Authentifizierung holen
+            const token = localStorage.getItem('token');
+            
             fetch('/api/bots/stop', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id: botId })
+                body: JSON.stringify({ 
+                    botId: botId,
+                    token: token
+                })
             })
             .then(response => response.json())
             .then(data => {
