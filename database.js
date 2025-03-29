@@ -57,7 +57,10 @@ function initializeDatabase() {
                 role: 'admin',
                 created_at: new Date().toISOString(),
                 verified: true,
-                last_login: new Date().toISOString()
+                last_login: new Date().toISOString(),
+                isPremium: true,
+                botsCreated: 0,
+                maxBots: 999 // Admin kann unbegrenzt viele Bots erstellen
             },
             {
                 uid: 'user_1',
@@ -67,7 +70,10 @@ function initializeDatabase() {
                 role: 'user',
                 created_at: new Date().toISOString(),
                 verified: true,
-                last_login: new Date().toISOString()
+                last_login: new Date().toISOString(),
+                isPremium: false,
+                botsCreated: 1,
+                maxBots: 1 // Normaler Benutzer hat nur 1 kostenlosen Bot
             }
         ];
         
@@ -138,7 +144,10 @@ async function registerUser(email, password, username) {
         role: 'user',
         created_at: new Date().toISOString(),
         verified: false, // Benutzer muss seine E-Mail bestätigen
-        last_login: null
+        last_login: null,
+        isPremium: false,
+        botsCreated: 0,
+        maxBots: 1 // Normaler Benutzer hat einen kostenlosen Bot
     };
     
     // Benutzer zur Datenbank hinzufügen
@@ -318,6 +327,209 @@ async function updatePassword(email, newPassword) {
     };
 }
 
+/**
+ * Upgrade eines Benutzerkontos auf Premium
+ * @param {string} email - E-Mail-Adresse des Benutzers
+ * @returns {Promise<Object>} - Ergebnis des Vorgangs
+ */
+async function upgradeToPremium(email) {
+    // Benutzer in der Datenbank suchen
+    const user = db.users.find(user => user.email === email);
+    
+    // Prüfen, ob der Benutzer existiert
+    if (!user) {
+        return { success: false, error: 'Benutzer nicht gefunden' };
+    }
+    
+    // Prüfen, ob der Benutzer bereits Premium ist
+    if (user.isPremium) {
+        return { success: false, error: 'Benutzer ist bereits Premium' };
+    }
+    
+    // Benutzer auf Premium upgraden
+    user.isPremium = true;
+    user.maxBots = 999; // Unbegrenzte Bots für Premium-Benutzer
+    writeDatabase();
+    
+    return {
+        success: true,
+        message: 'Benutzer wurde erfolgreich auf Premium aktualisiert'
+    };
+}
+
+/**
+ * Bot erstellen und starten
+ * @param {string} userId - ID des Benutzers
+ * @param {Object} botConfig - Konfiguration für den Bot
+ * @returns {Promise<Object>} - Ergebnis des Vorgangs
+ */
+async function createBot(userId, botConfig) {
+    // Benutzer in der Datenbank suchen
+    const user = db.users.find(user => user.uid === userId);
+    
+    // Prüfen, ob der Benutzer existiert
+    if (!user) {
+        return { success: false, error: 'Benutzer nicht gefunden' };
+    }
+    
+    // Anzahl der Bots des Benutzers ermitteln
+    const userBots = db.bots.filter(bot => bot.user_id === userId);
+    
+    // Prüfen, ob der Benutzer das Bot-Limit erreicht hat
+    if (userBots.length >= user.maxBots) {
+        return { 
+            success: false, 
+            error: 'Du hast das Maximum an erlaubten Bots erreicht. Upgrade auf Premium für unbegrenzte Bots.',
+            canUpgrade: !user.isPremium
+        };
+    }
+    
+    // Neuen Bot erstellen
+    const botId = 'bot_' + Date.now();
+    const newBot = {
+        id: botId,
+        user_id: userId,
+        server_address: botConfig.server,
+        server_port: botConfig.port || 25565,
+        username: botConfig.username,
+        status: 'starting',
+        created_at: new Date().toISOString(),
+        last_active: new Date().toISOString(),
+        total_online_time: 0,
+        config: {
+            auto_reconnect: botConfig.autoReconnect || false,
+            anti_afk: botConfig.antiAFK || false,
+            minecraft_version: botConfig.version || '1.20.4',
+            chat_commands: botConfig.chatCommands || []
+        }
+    };
+    
+    // Bot zur Datenbank hinzufügen
+    db.bots.push(newBot);
+    
+    // Benutzer aktualisieren
+    user.botsCreated += 1;
+    writeDatabase();
+    
+    // Log erstellen
+    addBotLog(botId, `Bot '${botConfig.username}' wurde erstellt und wird gestartet...`, 'info');
+    
+    // In einer echten Anwendung würde hier der Mineflayer-Bot gestartet werden
+    // connectToMinecraftServer(botId, botConfig);
+    
+    // Verzögerung simulieren, damit der Bot "starten" kann
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            // Bot-Status aktualisieren
+            const bot = db.bots.find(b => b.id === botId);
+            if (bot) {
+                bot.status = 'online';
+                writeDatabase();
+                
+                // Log erstellen
+                addBotLog(botId, `Bot '${botConfig.username}' hat erfolgreich zum Server verbunden.`, 'success');
+            }
+            
+            resolve({
+                success: true,
+                message: 'Bot wurde erfolgreich erstellt und gestartet',
+                botId: botId
+            });
+        }, 2000);
+    });
+}
+
+/**
+ * Bot stoppen
+ * @param {string} botId - ID des Bots
+ * @param {string} userId - ID des Benutzers (für Berechtigungsprüfung)
+ * @returns {Promise<Object>} - Ergebnis des Vorgangs
+ */
+async function stopBot(botId, userId) {
+    // Bot in der Datenbank suchen
+    const bot = db.bots.find(b => b.id === botId);
+    
+    // Prüfen, ob der Bot existiert
+    if (!bot) {
+        return { success: false, error: 'Bot nicht gefunden' };
+    }
+    
+    // Prüfen, ob der Benutzer der Besitzer des Bots ist
+    if (bot.user_id !== userId) {
+        return { success: false, error: 'Du bist nicht berechtigt, diesen Bot zu stoppen' };
+    }
+    
+    // Prüfen, ob der Bot bereits offline ist
+    if (bot.status === 'offline') {
+        return { success: false, error: 'Bot ist bereits offline' };
+    }
+    
+    // In einer echten Anwendung würde hier der Mineflayer-Bot gestoppt werden
+    // disconnectFromMinecraftServer(botId);
+    
+    // Bot-Status aktualisieren
+    bot.status = 'stopping';
+    writeDatabase();
+    
+    // Log erstellen
+    addBotLog(botId, `Bot '${bot.username}' wird gestoppt...`, 'info');
+    
+    // Verzögerung simulieren, damit der Bot "stoppen" kann
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            // Bot-Status aktualisieren
+            bot.status = 'offline';
+            bot.last_active = new Date().toISOString();
+            writeDatabase();
+            
+            // Log erstellen
+            addBotLog(botId, `Bot '${bot.username}' wurde erfolgreich gestoppt.`, 'success');
+            
+            resolve({
+                success: true,
+                message: 'Bot wurde erfolgreich gestoppt'
+            });
+        }, 1000);
+    });
+}
+
+/**
+ * Fügt einen Logeintrag für einen Bot hinzu
+ * @param {string} botId - Die ID des Bots
+ * @param {string} message - Die Lognachricht
+ * @param {string} type - Der Logtyp ('info', 'error', 'success', 'warning')
+ */
+function addBotLog(botId, message, type = 'info') {
+    const logId = 'log_' + Date.now();
+    const newLog = {
+        id: logId,
+        bot_id: botId,
+        timestamp: new Date().toISOString(),
+        type: type,
+        message: message
+    };
+    
+    db.logs.push(newLog);
+    writeDatabase();
+}
+
+/**
+ * Gibt die Logs eines Bots zurück
+ * @param {string} botId - Die ID des Bots
+ * @param {number} limit - Maximale Anzahl der zurückzugebenden Logs
+ * @returns {Array} - Die Logs des Bots
+ */
+function getBotLogs(botId, limit = 100) {
+    // Alle Logs des Bots ermitteln
+    const botLogs = db.logs.filter(log => log.bot_id === botId);
+    
+    // Nach Zeitstempel sortieren (neueste zuerst)
+    botLogs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    
+    // Auf die angegebene Anzahl begrenzen
+    return botLogs.slice(0, limit);
+}
+
 // Exportiere die Funktionen
 export {
     initializeDatabase,
@@ -326,5 +538,10 @@ export {
     sendVerificationEmail,
     getUserData,
     sendPasswordResetEmail,
-    updatePassword
+    updatePassword,
+    upgradeToPremium,
+    createBot,
+    stopBot,
+    addBotLog,
+    getBotLogs
 };
