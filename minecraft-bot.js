@@ -5,14 +5,18 @@ let activeBots = {};
 
 function startBot(config) {
     return new Promise((resolve) => {
-        const { username, serverIp, serverPort, mcVersion } = config;
+        const { username, serverIp, mcVersion } = config;
         
         try {
+            // Extrahiere Port aus der Server-IP falls vorhanden
+            let [host, port] = serverIp.split(':');
+            port = port || '25565';
+
             const bot = mineflayer.createBot({
-                host: serverIp,
-                port: parseInt(serverPort),
+                host: host,
+                port: parseInt(port),
                 username: `${username}_Bot`,
-                version: mcVersion
+                version: mcVersion || '1.21.4'
             });
 
             bot.once('spawn', () => {
