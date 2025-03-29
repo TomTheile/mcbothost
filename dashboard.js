@@ -1,273 +1,363 @@
-// Einfache Datenbankschnittstelle für die JSON-Datei
+// Dashboard Funktionalität
 
-// Simuliert eine Datenbank im Arbeitsspeicher für die Client-Seite
-let inMemoryUsers = {};
+// DOM-Elemente
+const usernameElement = document.getElementById('username');
+const botStatusElement = document.getElementById('bot-status');
+const serverIpInput = document.getElementById('server-ip');
+const serverPortInput = document.getElementById('server-port');
+const botNameInput = document.getElementById('bot-name');
+const mcVersionSelect = document.getElementById('mc-version');
+const startBotButton = document.getElementById('start-bot');
+const stopBotButton = document.getElementById('stop-bot');
+const consoleWindow = document.getElementById('console-window');
+const clearConsoleButton = document.getElementById('clear-console');
+const commandInput = document.getElementById('command-input');
+const sendCommandButton = document.getElementById('send-command');
+const onlineTimeElement = document.getElementById('online-time');
+const positionElement = document.getElementById('position');
+const healthFill = document.getElementById('health-fill');
+const healthValue = document.getElementById('health-value');
+const foodFill = document.getElementById('food-fill');
+const foodValue = document.getElementById('food-value');
 
-// Initialisierung aus Benutzer (simuliert das Laden aus einer Datenbank)
-export function initializeDatabase() {
-    console.log("Einfache Datenbank initialisiert");
+// Benutzername aus localStorage oder SessionStorage abrufen
+const loadUserData = () => {
+    const username = localStorage.getItem('username') || sessionStorage.getItem('username') || 'Benutzer';
+    usernameElement.textContent = username;
     
-    // Sicherstellen, dass wir einige Standard-Demo-Benutzer haben
-    registerUser('demo@example.com', 'password123', 'DemoUser');
-    registerUser('TurboKid@outlook.de', 'minecraft', 'TurboKid');
+    // Vorausfüllen des Bot-Namens mit dem Benutzernamen + "_Bot"
+    botNameInput.value = `${username}_Bot`;
+};
+
+// Konsolen-Nachricht hinzufügen
+const addConsoleMessage = (message, type = 'normal') => {
+    const line = document.createElement('div');
+    line.classList.add('console-line');
     
-    return { success: true };
-}
+    if (type !== 'normal') {
+        line.classList.add(`console-${type}`);
+    }
+    
+    line.textContent = message;
+    consoleWindow.appendChild(line);
+    
+    // Automatisches Scrollen zum Ende der Konsole
+    consoleWindow.scrollTop = consoleWindow.scrollHeight;
+};
 
-// Benutzerregistrierung
-export async function registerUser(email, password, username) {
-    return new Promise((resolve) => {
-        console.log(`Registrierung für: ${email}, Benutzername: ${username}`);
-        
-        // Prüfen, ob Benutzer bereits existiert
-        if (inMemoryUsers[email]) {
-            resolve({
-                success: false,
-                error: "Diese E-Mail-Adresse wird bereits verwendet"
-            });
-            return;
-        }
-        
-        // Simulierte Verzögerung
-        setTimeout(() => {
-            // Benutzer speichern
-            const userId = 'db-' + Math.random().toString(36).substr(2, 9);
-            inMemoryUsers[email] = {
-                uid: userId,
-                email: email,
-                username: username,
-                password: password,
-                verified: false,
-                created: new Date().toISOString()
-            };
-            
-            // Dann API-Anfrage an den Server senden
-            fetch('/api/users/register', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ username, email, password }),
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log("Serverantwort:", data);
-            })
-            .catch(error => {
-                console.error("Fehler bei Serveranfrage:", error);
-            });
-            
-            // Erfolgreiche Simulation
-            resolve({ 
-                success: true, 
-                user: { 
-                    uid: userId, 
-                    email: email,
-                    username: username
-                } 
-            });
-        }, 800);
-    });
-}
+// Konsolenfenster löschen
+clearConsoleButton.addEventListener('click', () => {
+    consoleWindow.innerHTML = '';
+    addConsoleMessage('System > Konsole wurde gelöscht');
+});
 
-// Benutzeranmeldung
-export async function loginUser(email, password) {
-    return new Promise((resolve) => {
-        console.log(`Anmeldung für: ${email}`);
-        
-        // Simulierte Verzögerung
-        setTimeout(() => {
-            // Prüfe, ob Benutzer existiert
-            const user = inMemoryUsers[email];
+// Bot-Start-Logik
+startBotButton.addEventListener('click', () => {
+    const serverIp = serverIpInput.value.trim();
+    const serverPort = serverPortInput.value.trim() || '25565';
+    const botName = botNameInput.value.trim();
+    const mcVersion = mcVersionSelect.value;
+    
+    // Validierung
+    if (!serverIp) {
+        addConsoleMessage('System > Bitte gib eine Server-IP ein!', 'error');
+        return;
+    }
+    
+    if (!botName) {
+        addConsoleMessage('System > Bitte gib einen Bot-Namen ein!', 'error');
+        return;
+    }
+    
+    // Buttons und Elemente aktualisieren
+    startBotButton.disabled = true;
+    stopBotButton.disabled = false;
+    commandInput.disabled = false;
+    sendCommandButton.disabled = false;
+    
+    botStatusElement.textContent = 'Verbinden...';
+    
+    // Anfrage an den Server senden, um den echten Minecraft-Bot zu starten
+    fetch('/api/minecraft/start-bot', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            username: localStorage.getItem('username'),
+            serverIp: serverIp,
+            serverPort: serverPort,
+            botName: botName,
+            mcVersion: mcVersion
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Erfolgreich verbunden
+            botStatusElement.textContent = 'Online';
+            botStatusElement.className = 'status-online';
             
-            // Prüfe zuerst die lokalen Daten
-            if (user && user.password === password) {
-                // E-Mail-Adresse im localStorage speichern für die Admin-Seite
-                localStorage.setItem('userEmail', email);
+            addConsoleMessage(`System > Verbindung zum Bot hergestellt`, 'success');
+            addConsoleMessage(`Bot > Verbinde mit ${serverIp}:${serverPort} (Minecraft ${mcVersion})...`);
+            
+            // Nach einer kurzen Verzögerung wird die Verbindung zum Server simuliert
+            setTimeout(() => {
+                addConsoleMessage(`Bot > Erfolgreich mit dem Server verbunden!`, 'success');
+                addConsoleMessage(`Bot > Spielername: ${botName}`);
+                addConsoleMessage(`Server > Willkommen auf dem Server, ${botName}!`);
                 
-                resolve({ 
-                    success: true, 
-                    user: { 
-                        uid: user.uid, 
-                        email: user.email,
-                        username: user.username,
-                        verified: user.verified,
-                        role: user.role || 'user'
-                    } 
-                });
-                return;
-            }
+                // Starte Timer und Bot-Simulation
+                startBotSimulation();
+            }, 1500);
+        } else {
+            // Fehler beim Verbinden
+            botStatusElement.textContent = 'Fehler';
+            botStatusElement.className = 'status-error';
             
-            // Wenn nicht vorhanden, dann Server anfragen
-            fetch('/api/users/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ email, password }),
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Wenn ein Admin-Login eine Bestätigung erfordert
-                    if (data.approval_required) {
-                        resolve({
-                            success: false,
-                            pendingApproval: true,
-                            message: data.message || "Admin-Login erfordert eine E-Mail-Bestätigung. Bitte prüfe deine E-Mails."
-                        });
-                        return;
-                    }
-                    
-                    // Benutzer im Speicher aktualisieren
-                    inMemoryUsers[email] = {
-                        ...data.user,
-                        password: password
-                    };
-                    
-                    // E-Mail-Adresse im localStorage speichern für die Admin-Seite
-                    localStorage.setItem('userEmail', email);
-                    
-                    resolve(data);
-                } else {
-                    resolve({ 
-                        success: false, 
-                        error: data.error || "Anmeldung fehlgeschlagen"
-                    });
-                }
-            })
-            .catch(error => {
-                console.error("Fehler bei Anmeldung:", error);
-                resolve({ 
-                    success: false, 
-                    error: "Verbindungsfehler beim Anmelden"
-                });
-            });
-        }, 800);
+            addConsoleMessage(`System > Fehler beim Verbinden: ${data.error}`, 'error');
+            startBotButton.disabled = false;
+            stopBotButton.disabled = true;
+            commandInput.disabled = true;
+            sendCommandButton.disabled = true;
+        }
+    })
+    .catch(error => {
+        console.error('Fehler bei der Server-Anfrage:', error);
+        
+        // Fehler beim Verbinden
+        botStatusElement.textContent = 'Fehler';
+        botStatusElement.className = 'status-error';
+        
+        addConsoleMessage(`System > Fehler bei der Server-Anfrage: ${error.message}`, 'error');
+        startBotButton.disabled = false;
+        stopBotButton.disabled = true;
+        commandInput.disabled = true;
+        sendCommandButton.disabled = true;
     });
-}
+});
 
-// E-Mail-Verifizierung senden
-export async function sendVerificationEmail(userId, email, username) {
-    return fetch('/send-verification-email', {
+// Bot-Stop-Logik
+stopBotButton.addEventListener('click', () => {
+    stopBotButton.disabled = true;
+    commandInput.disabled = true;
+    sendCommandButton.disabled = true;
+    
+    addConsoleMessage(`System > Bot wird gestoppt...`, 'warning');
+    
+    // Echten Bot über Server-API stoppen
+    fetch('/api/minecraft/stop-bot', {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json',
+            'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ userId, email, username }),
+        body: JSON.stringify({
+            username: localStorage.getItem('username'),
+            serverIp: serverIpInput.value,
+            serverPort: serverPortInput.value || '25565'
+        })
     })
     .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Erfolgreich getrennt
+            botStatusElement.textContent = 'Offline';
+            botStatusElement.className = 'status-offline';
+            
+            addConsoleMessage(`System > Bot wurde erfolgreich gestoppt`, 'success');
+            startBotButton.disabled = false;
+            
+            // Bot-Simulation stoppen
+            stopBotSimulation();
+        } else {
+            // Fehler beim Trennen
+            botStatusElement.textContent = 'Fehler';
+            botStatusElement.className = 'status-error';
+            
+            addConsoleMessage(`System > Fehler beim Stoppen des Bots: ${data.error}`, 'error');
+            stopBotButton.disabled = false;
+        }
+    })
     .catch(error => {
-        console.error("Fehler beim Senden der Verifizierungs-E-Mail:", error);
-        return { success: false, error: "Fehler beim Senden der E-Mail" };
+        console.error('Fehler bei der Server-Anfrage:', error);
+        
+        // Fehler beim Trennen, trotzdem Interface zurücksetzen
+        botStatusElement.textContent = 'Offline';
+        botStatusElement.className = 'status-offline';
+        
+        addConsoleMessage(`System > Fehler bei der Server-Anfrage: ${error.message}`, 'error');
+        addConsoleMessage(`System > Bot wurde lokal gestoppt`, 'warning');
+        startBotButton.disabled = false;
+        
+        // Bot-Simulation stoppen
+        stopBotSimulation();
     });
+});
+
+// Befehl senden Logik
+sendCommandButton.addEventListener('click', sendCommand);
+commandInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        sendCommand();
+    }
+});
+
+function sendCommand() {
+    const command = commandInput.value.trim();
+    
+    if (!command) return;
+    
+    addConsoleMessage(`> ${command}`);
+    
+    // Befehlsverarbeitung simulieren
+    processCommand(command);
+    
+    // Sende den Befehl an den Server, der ihn an den Bot weiterleitet
+    fetch('/api/minecraft/send-command', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            command: command,
+            username: localStorage.getItem('username'),
+            serverIp: serverIpInput.value,
+            serverPort: serverPortInput.value || '25565'
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (!data.success) {
+            console.error('Fehler beim Senden des Befehls:', data.error);
+            addConsoleMessage('System > Fehler beim Senden des Befehls: ' + data.error, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Fehler bei der Server-Anfrage:', error);
+        addConsoleMessage('System > Fehler bei der Server-Anfrage: ' + error.message, 'error');
+    });
+    
+    // Eingabefeld leeren
+    commandInput.value = '';
 }
 
-// Benutzerdaten abrufen
-export async function getUserData(userId) {
-    return new Promise((resolve) => {
-        console.log(`Abfrage der Benutzerdaten für UserID: ${userId}`);
-        
-        // Benutzer in der lokalen Datenbank suchen
-        let foundUser = null;
-        for (const email in inMemoryUsers) {
-            if (inMemoryUsers[email].uid === userId) {
-                foundUser = inMemoryUsers[email];
-                break;
-            }
-        }
-        
-        // Simulierte Verzögerung
+// Befehlsverarbeitung (Simulation)
+function processCommand(command) {
+    const lowerCommand = command.toLowerCase();
+    
+    // Simulierte Befehlsantworten
+    if (lowerCommand === 'help') {
+        addConsoleMessage(`Bot > Verfügbare Befehle:`);
+        addConsoleMessage(`Bot > help - Zeigt diese Hilfe`);
+        addConsoleMessage(`Bot > status - Zeigt den Bot-Status`);
+        addConsoleMessage(`Bot > jump - Lässt den Bot springen`);
+        addConsoleMessage(`Bot > say <nachricht> - Sendet eine Nachricht im Chat`);
+    } else if (lowerCommand === 'status') {
+        addConsoleMessage(`Bot > Status: Online`);
+        addConsoleMessage(`Bot > Position: ${positionElement.textContent}`);
+        addConsoleMessage(`Bot > Gesundheit: ${healthValue.textContent}`);
+        addConsoleMessage(`Bot > Nahrung: ${foodValue.textContent}`);
+    } else if (lowerCommand === 'jump') {
+        addConsoleMessage(`Bot > Springe...`, 'info');
         setTimeout(() => {
-            if (foundUser) {
-                resolve({
-                    success: true,
-                    user: {
-                        uid: foundUser.uid,
-                        email: foundUser.email,
-                        username: foundUser.username,
-                        verified: foundUser.verified
-                    }
-                });
-            } else {
-                // Wenn nicht gefunden, verwenden wir den Demo-Benutzer
-                fetch(`/api/users/get?userId=${userId}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            resolve({
-                                success: true,
-                                user: data.user
-                            });
-                        } else {
-                            resolve({
-                                success: true,
-                                user: {
-                                    uid: userId,
-                                    email: 'demo@example.com',
-                                    username: 'Demo User',
-                                    verified: true
-                                }
-                            });
-                        }
-                    })
-                    .catch(() => {
-                        // Fallback-Benutzer
-                        resolve({
-                            success: true,
-                            user: {
-                                uid: userId,
-                                email: 'demo@example.com',
-                                username: 'Demo User',
-                                verified: true
-                            }
-                        });
-                    });
-            }
-        }, 800);
-    });
+            addConsoleMessage(`Bot > Sprung ausgeführt`);
+        }, 500);
+    } else if (lowerCommand.startsWith('say ')) {
+        const message = command.substring(4);
+        addConsoleMessage(`Bot > Sende: "${message}"`);
+        setTimeout(() => {
+            addConsoleMessage(`Chat > ${botNameInput.value}: ${message}`);
+        }, 300);
+    } else {
+        addConsoleMessage(`Bot > Unbekannter Befehl: ${command}`, 'error');
+        addConsoleMessage(`Bot > Gib 'help' ein für eine Liste der verfügbaren Befehle`);
+    }
 }
 
-// Passwort zurücksetzen
-export async function sendPasswordResetEmail(email) {
-    return fetch('/reset-password', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email }),
-    })
-    .then(response => response.json())
-    .catch(error => {
-        console.error("Fehler beim Senden der Passwort-Zurücksetzen-E-Mail:", error);
-        return { success: false, error: "Fehler beim Senden der E-Mail" };
-    });
-}
+// Bot-Simulation
+let botInterval;
+let startTime;
+let onlineTimeInterval;
 
-// Passwort aktualisieren
-export async function updatePassword(email, newPassword) {
-    return new Promise((resolve) => {
-        // Lokale Kopie aktualisieren, falls vorhanden
-        if (inMemoryUsers[email]) {
-            inMemoryUsers[email].password = newPassword;
-        }
+function startBotSimulation() {
+    startTime = new Date();
+    
+    // Online-Zeit-Aktualisierung
+    onlineTimeInterval = setInterval(updateOnlineTime, 1000);
+    
+    // Bot-Status-Aktualisierung
+    botInterval = setInterval(() => {
+        // Zufällige Position
+        const x = Math.floor(Math.random() * 200 - 100);
+        const y = Math.floor(Math.random() * 20 + 60);
+        const z = Math.floor(Math.random() * 200 - 100);
+        positionElement.textContent = `X: ${x} Y: ${y} Z: ${z}`;
         
-        // Server-Anfrage senden
-        fetch('/api/users/reset-password', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ email, newPassword }),
-        })
-        .then(response => response.json())
-        .then(data => {
-            resolve(data);
-        })
-        .catch(error => {
-            console.error("Fehler beim Aktualisieren des Passworts:", error);
-            // Trotzdem als Erfolg melden, da lokale Kopie aktualisiert wurde
-            resolve({ success: true });
-        });
-    });
+        // Zufällige Gesundheit (zwischen 10 und 20)
+        const health = Math.floor(Math.random() * 11 + 10);
+        const healthPercent = (health / 20) * 100;
+        healthFill.style.width = `${healthPercent}%`;
+        healthValue.textContent = `${health}/20`;
+        
+        // Zufällige Nahrung (zwischen 10 und 20)
+        const food = Math.floor(Math.random() * 11 + 10);
+        const foodPercent = (food / 20) * 100;
+        foodFill.style.width = `${foodPercent}%`;
+        foodValue.textContent = `${food}/20`;
+        
+        // Zufällige Konsolen-Nachrichten
+        if (Math.random() < 0.3) {
+            const messages = [
+                "Bot > Bewege mich...",
+                "Server > Die Sonne geht auf",
+                "Bot > Kein Spieler in der Nähe",
+                "Bot > Warte auf Events...",
+                "Chat > Spieler1: Hallo zusammen!",
+                "Chat > Spieler2: Hat jemand Diamanten?",
+                "Server > Ein Zombie nähert sich",
+                "Bot > Springe über ein Hindernis"
+            ];
+            const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+            addConsoleMessage(randomMessage);
+        }
+    }, 3000);
 }
+
+function stopBotSimulation() {
+    clearInterval(botInterval);
+    clearInterval(onlineTimeInterval);
+    
+    // Reset der Statistiken
+    positionElement.textContent = "X: 0 Y: 0 Z: 0";
+    healthFill.style.width = "100%";
+    healthValue.textContent = "20/20";
+    foodFill.style.width = "100%";
+    foodValue.textContent = "20/20";
+    onlineTimeElement.textContent = "00:00:00";
+}
+
+function updateOnlineTime() {
+    if (!startTime) return;
+    
+    const now = new Date();
+    const diff = now - startTime;
+    
+    // Millisekunden in Stunden, Minuten, Sekunden umrechnen
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+    
+    // Formatierung mit führenden Nullen
+    const formattedHours = hours.toString().padStart(2, '0');
+    const formattedMinutes = minutes.toString().padStart(2, '0');
+    const formattedSeconds = seconds.toString().padStart(2, '0');
+    
+    onlineTimeElement.textContent = `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
+}
+
+// Initialisierung
+window.addEventListener('DOMContentLoaded', () => {
+    loadUserData();
+    addConsoleMessage("System > Dashboard wurde geladen");
+    addConsoleMessage("System > Bitte gib eine Minecraft Server IP ein und drücke 'Bot starten'");
+});
