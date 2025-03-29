@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,8 +12,8 @@
         <div class="header">
             <h1>Herobrine AFK Bot</h1>
             <div class="quick-links">
-                <a href="#">Terms of Service</a>
-                <a href="#">Privacy Policy</a>
+                <a href="#">Nutzungsbedingungen</a>
+                <a href="#">Datenschutz</a>
             </div>
         </div>
 
@@ -22,21 +22,21 @@
             <div class="auth-section green-border">
                 <div class="auth-tabs">
                     <button class="active" id="login-tab">Login</button>
-                    <button id="register-tab">Register</button>
+                    <button id="register-tab">Registrieren</button>
                 </div>
 
                 <!-- Login Form -->
                 <form class="auth-form" id="login-form">
-                    <h2>Welcome Back</h2>
+                    <h2>Willkommen zurück</h2>
                     <div class="form-group">
-                        <label>Email</label>
-                        <input type="email" placeholder="Enter your email" required>
+                        <label>E-Mail</label>
+                        <input type="email" placeholder="Gib deine E-Mail ein" required>
                     </div>
                     <div class="form-group">
-                        <label>Password</label>
-                        <input type="password" placeholder="Enter your password" required>
+                        <label>Passwort</label>
+                        <input type="password" placeholder="Gib dein Passwort ein" required>
                     </div>
-                    <button type="submit" class="auth-btn" id="login-btn">Login</button>
+                    <button type="submit" class="auth-btn" id="login-btn">Anmelden</button>
                     <div class="forgot-password" style="text-align: center; margin-top: 15px;">
                         <a href="forgot-password.html" style="color: #a0a0a0; text-decoration: none; font-size: 0.9rem;">Passwort vergessen?</a>
                     </div>
@@ -44,57 +44,167 @@
 
                 <!-- Register Form -->
                 <form class="auth-form" id="register-form" style="display: none;">
-                    <h2>Create an Account</h2>
+                    <h2>Konto erstellen</h2>
                     <div class="form-group">
-                        <label>Username</label>
-                        <input type="text" placeholder="Enter your username" required>
+                        <label>Benutzername</label>
+                        <input type="text" placeholder="Gib deinen Benutzernamen ein" required>
                     </div>
                     <div class="form-group">
-                        <label>Email</label>
-                        <input type="email" placeholder="Enter your email" required>
+                        <label>E-Mail</label>
+                        <input type="email" placeholder="Gib deine E-Mail ein" required>
                     </div>
                     <div class="form-group">
-                        <label>Password</label>
-                        <input type="password" placeholder="Enter your password" required>
+                        <label>Passwort</label>
+                        <input type="password" placeholder="Gib dein Passwort ein" required>
                     </div>
                     <div class="form-group">
-                        <label>Confirm Password</label>
-                        <input type="password" placeholder="Confirm your password" required>
+                        <label>Passwort bestätigen</label>
+                        <input type="password" placeholder="Bestätige dein Passwort" required>
                     </div>
-                    <button type="submit" class="auth-btn" id="register-btn">Register</button>
+                    <button type="submit" class="auth-btn" id="register-btn">Registrieren</button>
                 </form>
             </div>
 
             <!-- Quick Guide -->
             <div class="quick-guide green-border">
-                <h3>🚀 Quick Guide</h3>
+                <h3>🚀 Schnellstart</h3>
                 <div class="guide-box">
-                    <div class="guide-step">👤 <strong>Register</strong> – Create an account</div>
+                    <div class="guide-step">👤 <strong>Registrieren</strong> – Erstelle ein Konto</div>
                 </div>
                 <div class="guide-box">
-                    <div class="guide-step">📧 <strong>Verify</strong> – Check your email</div>
+                    <div class="guide-step">📧 <strong>Bestätigen</strong> – Prüfe deine E-Mails</div>
                 </div>
                 <div class="guide-box">
-                    <div class="guide-step">🌐 <strong>Enter IP</strong> – Server address</div>
+                    <div class="guide-step">🌐 <strong>IP eingeben</strong> – Server-Adresse</div>
                 </div>
                 <div class="guide-box">
-                    <div class="guide-step">🎮 <strong>Start</strong> – Activate the bot!</div>
+                    <div class="guide-step">🎮 <strong>Starten</strong> – Aktiviere den Bot!</div>
                 </div>
             </div>
         </div>
 
         <!-- Footer -->
         <div class="footer">
-            <p>The advanced Minecraft bot service</p>
+            <p>Der fortschrittliche Minecraft Bot-Service</p>
             <div class="footer-links">
-                <a href="#">Terms of Service</a>
-                <a href="#">Privacy Policy</a>
+                <a href="#">Nutzungsbedingungen</a>
+                <a href="#">Datenschutz</a>
             </div>
         </div>
     </div>
 
-    <!-- Firebase und App Scripts -->
-    <script type="module" src="firebase.js"></script>
-    <script type="module" src="script.js"></script>
+    <!-- Scripts -->
+    <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Tabs wechseln
+            const loginTab = document.getElementById('login-tab');
+            const registerTab = document.getElementById('register-tab');
+            const loginForm = document.getElementById('login-form');
+            const registerForm = document.getElementById('register-form');
+            
+            loginTab.addEventListener('click', function() {
+                loginTab.classList.add('active');
+                registerTab.classList.remove('active');
+                loginForm.style.display = 'block';
+                registerForm.style.display = 'none';
+            });
+            
+            registerTab.addEventListener('click', function() {
+                registerTab.classList.add('active');
+                loginTab.classList.remove('active');
+                registerForm.style.display = 'block';
+                loginForm.style.display = 'none';
+            });
+            
+            // Login-Formular
+            loginForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const email = loginForm.querySelector('input[type="email"]').value;
+                const password = loginForm.querySelector('input[type="password"]').value;
+                
+                clearStatusMessages(loginForm);
+                
+                // API-Anfrage zum Login
+                fetch('/api/users/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Login erfolgreich
+                        localStorage.setItem('auth_token', data.token);
+                        localStorage.setItem('user_id', data.user.uid);
+                        localStorage.setItem('username', data.user.username);
+                        localStorage.setItem('email', data.user.email);
+                        localStorage.setItem('user_role', data.user.role || 'user');
+                        
+                        // Zum Dashboard weiterleiten
+                        window.location.href = 'dashboard.html';
+                    } else {
+                        // Fehler anzeigen
+                        const errorMessage = createStatusMessage(data.error || 'Anmeldung fehlgeschlagen', true);
+                        loginForm.appendChild(errorMessage);
+                    }
+                })
+                .catch(error => {
+                    console.error('Login-Fehler:', error);
+                    const errorMessage = createStatusMessage('Serverfehler bei der Anmeldung', true);
+                    loginForm.appendChild(errorMessage);
+                });
+            });
+            
+            // Registrierungsformular
+            registerForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const username = registerForm.querySelector('input[type="text"]').value;
+                const email = registerForm.querySelector('input[type="email"]').value;
+                const password = registerForm.querySelectorAll('input[type="password"]')[0].value;
+                const confirmPassword = registerForm.querySelectorAll('input[type="password"]')[1].value;
+                
+                clearStatusMessages(registerForm);
+                
+                // Passwörter vergleichen
+                if (password !== confirmPassword) {
+                    const errorMessage = createStatusMessage('Die Passwörter stimmen nicht überein', true);
+                    registerForm.appendChild(errorMessage);
+                    return;
+                }
+                
+                // API-Anfrage zur Registrierung
+                fetch('/api/users/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, email, password })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Registrierung erfolgreich
+                        const successMessage = createStatusMessage(
+                            'Registrierung erfolgreich! Bitte überprüfe deine E-Mails zur Bestätigung deines Kontos.'
+                        );
+                        registerForm.appendChild(successMessage);
+                        
+                        // Nach kurzer Zeit zum Login zurückkehren
+                        setTimeout(() => {
+                            loginTab.click();
+                        }, 3000);
+                    } else {
+                        // Fehler anzeigen
+                        const errorMessage = createStatusMessage(data.error || 'Registrierung fehlgeschlagen', true);
+                        registerForm.appendChild(errorMessage);
+                    }
+                })
+                .catch(error => {
+                    console.error('Registrierungsfehler:', error);
+                    const errorMessage = createStatusMessage('Serverfehler bei der Registrierung', true);
+                    registerForm.appendChild(errorMessage);
+                });
+            });
+        });
+    </script>
 </body>
 </html>
