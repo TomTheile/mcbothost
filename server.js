@@ -357,24 +357,24 @@ app.post('/api/users/login', async (req, res) => {
         });
     }
 
-    // Verbindung prüfen
     let db;
     try {
         db = readDatabase();
         if (!db || !db.users) {
-            throw new Error('Datenbank nicht verfügbar');
+            console.error("Keine Benutzer in der Datenbank gefunden");
+            return res.status(500).json({
+                success: false,
+                error: 'Datenbankfehler. Bitte versuche es später erneut.'
+            });
         }
         console.log("Datenbankverbindung erfolgreich");
     } catch (error) {
         console.error("Datenbankfehler:", error);
         return res.status(500).json({
             success: false,
-            error: 'Serververbindung konnte nicht hergestellt werden. Bitte versuche es später erneut.'
+            error: 'Datenbankfehler. Bitte versuche es später erneut.'
         });
     }
-
-    // Datenbank lesen
-    const db = readDatabase();
 
     // Benutzer suchen
     const user = db.users[email];
