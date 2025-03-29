@@ -1,0 +1,1410 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Herobrine AFK Bot</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header (Top) -->
+        <div class="header">
+            <h1>Herobrine AFK Bot - Admin</h1>
+            <div class="quick-links">
+                <span id="admin-username">Admin</span>
+                <a href="dashboard.html">Zum Dashboard</a>
+                <a href="#" id="logout-link">Abmelden</a>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <!-- Admin Tab-Navigation -->
+            <div class="admin-tabs">
+                <button class="tab-button active" data-tab="dashboard-tab">Dashboard</button>
+                <button class="tab-button" data-tab="users-tab">Benutzer</button>
+                <button class="tab-button" data-tab="bots-tab">Bots</button>
+                <button class="tab-button" data-tab="logs-tab">Logs</button>
+                <button class="tab-button" data-tab="config-tab">Konfiguration</button>
+            </div>
+        
+            <!-- Dashboard Tab -->
+            <div id="dashboard-tab-content" class="tab-content active">
+                <!-- Systemstatistik -->
+                <div class="admin-card">
+                    <h3>System Statistik</h3>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-value" id="user-count">0</div>
+                            <div class="stat-label">Registrierte Benutzer</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="active-bots">0</div>
+                            <div class="stat-label">Aktive Bots</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="verified-count">0</div>
+                            <div class="stat-label">Verifizierte Benutzer</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="banned-count">0</div>
+                            <div class="stat-label">Gesperrte Benutzer</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Login Statistik -->
+                <div class="admin-card">
+                    <h3>Login Statistik</h3>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-value" id="logins-today">0</div>
+                            <div class="stat-label">Logins heute</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="logins-24h">0</div>
+                            <div class="stat-label">Logins (24h)</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="logins-7d">0</div>
+                            <div class="stat-label">Logins (7 Tage)</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="failed-logins">0</div>
+                            <div class="stat-label">Fehlgeschlagene Logins</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Server Statistik -->
+                <div class="admin-card">
+                    <h3>Server Statistik</h3>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-value" id="server-uptime">0h</div>
+                            <div class="stat-label">Server-Laufzeit</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="total-errors">0</div>
+                            <div class="stat-label">Fehler</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="total-requests">0</div>
+                            <div class="stat-label">Anfragen</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="bot-starts">0</div>
+                            <div class="stat-label">Bot-Starts</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Neueste Aktivitäten -->
+                <div class="admin-card">
+                    <h3>Neueste Aktivitäten</h3>
+                    <div class="activity-list" id="activity-list">
+                        <div class="log-item loading">Aktivitäten werden geladen...</div>
+                    </div>
+                </div>
+            </div>
+        
+            <!-- Benutzer Tab -->
+            <div id="users-tab-content" class="tab-content">
+                <!-- Benutzersuche -->
+                <div class="admin-card">
+                    <h3>Benutzersuche</h3>
+                    <div class="search-box">
+                        <input type="text" id="user-search" placeholder="Suche nach Benutzername oder E-Mail">
+                        <button id="search-btn">Suchen</button>
+                    </div>
+                    <div class="filter-options">
+                        <label><input type="checkbox" id="filter-verified" checked> Verifiziert</label>
+                        <label><input type="checkbox" id="filter-unverified" checked> Unverifiziert</label>
+                        <label><input type="checkbox" id="filter-banned" checked> Gesperrt</label>
+                        <label><input type="checkbox" id="filter-active-bots" checked> Mit aktiven Bots</label>
+                    </div>
+                </div>
+
+                <!-- Benutzerliste -->
+                <div class="admin-card">
+                    <h3>Benutzerliste</h3>
+                    <div class="user-list" id="user-list">
+                        <div class="loading">Benutzer werden geladen...</div>
+                    </div>
+                </div>
+
+                <!-- Benutzerdetails Modal -->
+                <div id="user-details-modal" class="modal">
+                    <div class="modal-content">
+                        <span class="close-modal">&times;</span>
+                        <h3>Benutzerdetails</h3>
+                        <div id="user-details-content">
+                            <!-- Details werden dynamisch hinzugefügt -->
+                        </div>
+                        <div class="modal-actions">
+                            <button id="ban-user-btn">Benutzer sperren</button>
+                            <button id="unban-user-btn" style="display: none;">Sperre aufheben</button>
+                            <button id="warn-user-btn">Benutzer verwarnen</button>
+                            <button id="delete-user-btn" class="danger">Benutzer löschen</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        
+            <!-- Bots Tab -->
+            <div id="bots-tab-content" class="tab-content">
+                <!-- Bot-Statistiken -->
+                <div class="admin-card">
+                    <h3>Bot-Statistiken</h3>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-value" id="total-active-bots">0</div>
+                            <div class="stat-label">Aktive Bots</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="most-used-version">-</div>
+                            <div class="stat-label">Häufigste Version</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="unique-servers">0</div>
+                            <div class="stat-label">Eindeutige Server</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="avg-uptime">0min</div>
+                            <div class="stat-label">Durchschnitt. Laufzeit</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Aktive Bots -->
+                <div class="admin-card">
+                    <h3>Aktive Bots</h3>
+                    <div class="bot-list" id="active-bot-list">
+                        <div class="loading">Bots werden geladen...</div>
+                    </div>
+                </div>
+
+                <!-- Bot-Details Modal -->
+                <div id="bot-details-modal" class="modal">
+                    <div class="modal-content">
+                        <span class="close-modal">&times;</span>
+                        <h3>Bot-Details</h3>
+                        <div id="bot-details-content">
+                            <!-- Details werden dynamisch hinzugefügt -->
+                        </div>
+                        <div class="modal-actions">
+                            <button id="stop-bot-btn" class="danger">Bot stoppen</button>
+                            <button id="view-logs-btn">Logs anzeigen</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        
+            <!-- Logs Tab -->
+            <div id="logs-tab-content" class="tab-content">
+                <!-- Log-Filter -->
+                <div class="admin-card">
+                    <h3>Log-Filter</h3>
+                    <div class="filter-options">
+                        <label><input type="checkbox" id="filter-info" checked> Info</label>
+                        <label><input type="checkbox" id="filter-warning" checked> Warnung</label>
+                        <label><input type="checkbox" id="filter-error" checked> Fehler</label>
+                        <label><input type="number" id="log-limit" min="10" max="500" value="100"> Anzahl der Logs</label>
+                        <button id="refresh-logs-btn">Aktualisieren</button>
+                    </div>
+                </div>
+
+                <!-- Server-Logs -->
+                <div class="admin-card">
+                    <h3>Server-Logs</h3>
+                    <div class="logs-container" id="server-logs">
+                        <div class="loading">Logs werden geladen...</div>
+                    </div>
+                </div>
+
+                <!-- Fehler-Log -->
+                <div class="admin-card">
+                    <h3>Aktuelle Fehler</h3>
+                    <div class="error-logs" id="error-logs">
+                        <div class="loading">Fehler werden geladen...</div>
+                    </div>
+                </div>
+            </div>
+        
+            <!-- Konfiguration Tab -->
+            <div id="config-tab-content" class="tab-content">
+                <!-- System-Konfiguration -->
+                <div class="admin-card">
+                    <h3>System-Konfiguration</h3>
+                    <div class="config-form">
+                        <div class="form-group">
+                            <label for="max-bots-per-user">Max. Bots pro Benutzer</label>
+                            <input type="number" id="max-bots-per-user" min="1" max="10" value="1">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="auto-ban-warnings">Automatische Sperre nach X Verwarnungen</label>
+                            <input type="number" id="auto-ban-warnings" min="1" max="10" value="5">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="max-inactive-days">Max. inaktive Tage vor Account-Löschung</label>
+                            <input type="number" id="max-inactive-days" min="30" max="365" value="90">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="verification-required">Verifikation erforderlich</label>
+                            <select id="verification-required">
+                                <option value="true">Ja</option>
+                                <option value="false">Nein</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Minecraft-Einstellungen -->
+                <div class="admin-card">
+                    <h3>Minecraft-Einstellungen</h3>
+                    <div class="config-form">
+                        <div class="form-group">
+                            <label>Unterstützte Minecraft-Versionen</label>
+                            <div class="checkbox-group" id="mc-versions">
+                                <label><input type="checkbox" value="1.8" checked> 1.8</label>
+                                <label><input type="checkbox" value="1.12" checked> 1.12</label>
+                                <label><input type="checkbox" value="1.16" checked> 1.16</label>
+                                <label><input type="checkbox" value="1.17" checked> 1.17</label>
+                                <label><input type="checkbox" value="1.18" checked> 1.18</label>
+                                <label><input type="checkbox" value="1.19" checked> 1.19</label>
+                                <label><input type="checkbox" value="1.20" checked> 1.20</label>
+                                <label><input type="checkbox" value="1.21.4" checked> 1.21.4</label>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="default-version">Standard-Version</label>
+                            <select id="default-version">
+                                <option value="1.8">1.8</option>
+                                <option value="1.12">1.12</option>
+                                <option value="1.16">1.16</option>
+                                <option value="1.17">1.17</option>
+                                <option value="1.18">1.18</option>
+                                <option value="1.19">1.19</option>
+                                <option value="1.20">1.20</option>
+                                <option value="1.21.4" selected>1.21.4</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Server-Whitelist (einer pro Zeile)</label>
+                            <textarea id="server-whitelist" rows="4" placeholder="Leer lassen, um alle Server zu erlauben"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Server-Blacklist (einer pro Zeile)</label>
+                            <textarea id="server-blacklist" rows="4" placeholder="Leer lassen, um keine Server zu blockieren"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Speichern-Button -->
+                <div class="admin-card">
+                    <button id="save-config-btn" class="save-btn">Konfiguration speichern</button>
+                    <div id="config-status" class="status-message"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>Der fortschrittliche Minecraft Bot-Service - Administratorbereich</p>
+            <div class="footer-links">
+                <a href="#">Nutzungsbedingungen</a>
+                <a href="#">Datenschutz</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Globale Variablen
+        let userData = null;
+        let userToken = null;
+        let serverConfig = null;
+        let activeModal = null;
+        let currentOpenUser = null;
+        let currentOpenBot = null;
+        let userListData = [];
+        let botListData = [];
+    
+        // Beim Laden der Seite prüfen, ob der Benutzer ein Admin ist
+        document.addEventListener('DOMContentLoaded', () => {
+            // Token aus localStorage abrufen
+            userToken = localStorage.getItem('auth_token');
+            if (!userToken) {
+                window.location.href = 'index.html';
+                return;
+            }
+            
+            // Admin-Zugriff prüfen
+            checkAdminAccess();
+            
+            // Tab-Navigation einrichten
+            setupTabNavigation();
+            
+            // Event-Listener für Modals
+            setupModalListeners();
+            
+            // Admin-Funktionen einrichten
+            setupAdminFunctions();
+            
+            // Daten laden
+            loadAdminData();
+            
+            // Automatische Aktualisierung alle 30 Sekunden
+            setInterval(loadAdminData, 30000);
+            
+            // Logout-Link
+            document.getElementById('logout-link').addEventListener('click', (e) => {
+                e.preventDefault();
+                localStorage.removeItem('auth_token');
+                localStorage.removeItem('user_id');
+                window.location.href = 'index.html';
+            });
+        });
+        
+        // Prüfen, ob Benutzer Admin-Rechte hat
+        function checkAdminAccess() {
+            if (!userToken) return;
+            
+            const userId = localStorage.getItem('user_id');
+            
+            fetch('/api/users/validate-token', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${userToken}`
+                },
+                body: JSON.stringify({ userId, token: userToken })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    userData = data.user;
+                    
+                    // Benutzername im Header anzeigen
+                    document.getElementById('admin-username').textContent = userData.username;
+                    
+                    // Prüfen, ob der Benutzer Admin-Rechte hat
+                    if (userData.role !== 'admin') {
+                        // Kein Admin, zurück zum Dashboard
+                        window.location.href = 'dashboard.html';
+                    }
+                } else {
+                    // Token ungültig, zurück zur Anmeldung
+                    localStorage.removeItem('auth_token');
+                    localStorage.removeItem('user_id');
+                    window.location.href = 'index.html';
+                }
+            })
+            .catch(error => {
+                console.error('Fehler bei der Token-Validierung:', error);
+                localStorage.removeItem('auth_token');
+                localStorage.removeItem('user_id');
+                window.location.href = 'index.html';
+            });
+        }
+        
+        // Tab-Navigation einrichten
+        function setupTabNavigation() {
+            const tabButtons = document.querySelectorAll('.tab-button');
+            
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    // Aktive Klasse von allen Tab-Buttons entfernen
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    
+                    // Aktive Klasse zum geklickten Button hinzufügen
+                    button.classList.add('active');
+                    
+                    // Alle Tab-Inhalte ausblenden
+                    const tabContents = document.querySelectorAll('.tab-content');
+                    tabContents.forEach(content => content.classList.remove('active'));
+                    
+                    // Entsprechenden Tab-Inhalt anzeigen
+                    const tabId = button.getAttribute('data-tab');
+                    document.getElementById(tabId + '-content').classList.add('active');
+                });
+            });
+        }
+        
+        // Modal Event-Listener
+        function setupModalListeners() {
+            // Modals schließen bei Klick auf X
+            document.querySelectorAll('.close-modal').forEach(closeBtn => {
+                closeBtn.addEventListener('click', () => {
+                    document.querySelectorAll('.modal').forEach(modal => {
+                        modal.style.display = 'none';
+                    });
+                    activeModal = null;
+                });
+            });
+            
+            // Modal schließen bei Klick außerhalb
+            window.addEventListener('click', (event) => {
+                document.querySelectorAll('.modal').forEach(modal => {
+                    if (event.target === modal) {
+                        modal.style.display = 'none';
+                        activeModal = null;
+                    }
+                });
+            });
+        }
+        
+        // Admin-Funktionen einrichten
+        function setupAdminFunctions() {
+            // Benutzersuche
+            document.getElementById('search-btn').addEventListener('click', () => {
+                filterUserList();
+            });
+            
+            document.getElementById('user-search').addEventListener('keyup', (e) => {
+                if (e.key === 'Enter') {
+                    filterUserList();
+                }
+            });
+            
+            // Filter-Checkboxen
+            const filterCheckboxes = document.querySelectorAll('#filter-verified, #filter-unverified, #filter-banned, #filter-active-bots');
+            filterCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', filterUserList);
+            });
+            
+            // Log-Filter
+            document.getElementById('refresh-logs-btn').addEventListener('click', fetchServerLogs);
+            
+            // Konfiguration speichern
+            document.getElementById('save-config-btn').addEventListener('click', saveSystemConfig);
+            
+            // Ban/Unban/Warn-Buttons im Modal
+            document.getElementById('ban-user-btn').addEventListener('click', () => {
+                if (currentOpenUser) {
+                    banUser(currentOpenUser.email);
+                }
+            });
+            
+            document.getElementById('unban-user-btn').addEventListener('click', () => {
+                if (currentOpenUser) {
+                    unbanUser(currentOpenUser.email);
+                }
+            });
+            
+            document.getElementById('warn-user-btn').addEventListener('click', () => {
+                if (currentOpenUser) {
+                    warnUser(currentOpenUser.email);
+                }
+            });
+            
+            document.getElementById('delete-user-btn').addEventListener('click', () => {
+                if (currentOpenUser) {
+                    if (confirm(`Willst du wirklich den Benutzer ${currentOpenUser.username} löschen? Diese Aktion kann nicht rückgängig gemacht werden!`)) {
+                        deleteUser(currentOpenUser.email);
+                    }
+                }
+            });
+            
+            // Bot-Aktionen
+            document.getElementById('stop-bot-btn').addEventListener('click', () => {
+                if (currentOpenBot) {
+                    stopBot(currentOpenBot.owner.username);
+                }
+            });
+            
+            document.getElementById('view-logs-btn').addEventListener('click', () => {
+                if (currentOpenBot) {
+                    viewBotLogs(currentOpenBot.owner.username);
+                }
+            });
+        }
+        
+        // Alle Admin-Daten laden
+        function loadAdminData() {
+            fetchAdminStats();
+            fetchUserList();
+            fetchActiveBots();
+            fetchServerLogs();
+            fetchSystemConfig();
+        }
+        
+        // Admin-Statistiken abrufen
+        function fetchAdminStats() {
+            if (!userToken) return;
+            
+            fetch('/api/admin/stats', {
+                headers: {
+                    'Authorization': `Bearer ${userToken}`
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    updateDashboardStats(data.stats);
+                }
+            })
+            .catch(error => console.error('Fehler beim Abrufen der Admin-Statistiken:', error));
+        }
+        
+        // Benutzerliste abrufen
+        function fetchUserList() {
+            if (!userToken) return;
+            
+            // Ladeanzeige anzeigen
+            document.getElementById('user-list').innerHTML = '<div class="loading">Benutzer werden geladen...</div>';
+            
+            fetch('/api/admin/users', {
+                headers: {
+                    'Authorization': `Bearer ${userToken}`
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    userListData = data.users;
+                    renderUserList(data.users);
+                } else {
+                    document.getElementById('user-list').innerHTML = '<div class="error">Fehler beim Laden der Benutzerliste.</div>';
+                }
+            })
+            .catch(error => {
+                console.error('Fehler beim Abrufen der Benutzerliste:', error);
+                document.getElementById('user-list').innerHTML = '<div class="error">Fehler beim Laden der Benutzerliste.</div>';
+            });
+        }
+        
+        // Aktive Bots abrufen
+        function fetchActiveBots() {
+            if (!userToken) return;
+            
+            // Ladeanzeige anzeigen
+            document.getElementById('active-bot-list').innerHTML = '<div class="loading">Bots werden geladen...</div>';
+            
+            fetch('/api/admin/bots', {
+                headers: {
+                    'Authorization': `Bearer ${userToken}`
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    botListData = data.bots;
+                    renderBotList(data.bots);
+                } else {
+                    document.getElementById('active-bot-list').innerHTML = '<div class="error">Fehler beim Laden der Bot-Liste.</div>';
+                }
+            })
+            .catch(error => {
+                console.error('Fehler beim Abrufen der aktiven Bots:', error);
+                document.getElementById('active-bot-list').innerHTML = '<div class="error">Fehler beim Laden der Bot-Liste.</div>';
+            });
+        }
+        
+        // Server-Logs abrufen
+        function fetchServerLogs() {
+            if (!userToken) return;
+            
+            // Filter-Werte abrufen
+            const showInfo = document.getElementById('filter-info').checked;
+            const showWarning = document.getElementById('filter-warning').checked;
+            const showError = document.getElementById('filter-error').checked;
+            const logLimit = document.getElementById('log-limit').value;
+            
+            // Typ-Filter erstellen
+            let typeFilter = [];
+            if (showInfo) typeFilter.push('info');
+            if (showWarning) typeFilter.push('warning');
+            if (showError) typeFilter.push('error');
+            
+            // Ladeanzeige anzeigen
+            document.getElementById('server-logs').innerHTML = '<div class="loading">Logs werden geladen...</div>';
+            document.getElementById('error-logs').innerHTML = '<div class="loading">Fehler werden geladen...</div>';
+            
+            // Server-Logs abrufen
+            fetch(`/api/admin/logs?limit=${logLimit}`, {
+                headers: {
+                    'Authorization': `Bearer ${userToken}`
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    renderServerLogs(data.logs, typeFilter);
+                    
+                    // Aktuelle Aktivitäten für Dashboard
+                    const activityLogs = [...data.logs].slice(0, 5);
+                    renderActivityLogs(activityLogs);
+                } else {
+                    document.getElementById('server-logs').innerHTML = '<div class="error">Fehler beim Laden der Server-Logs.</div>';
+                    document.getElementById('activity-list').innerHTML = '<div class="error">Fehler beim Laden der Aktivitäten.</div>';
+                }
+            })
+            .catch(error => {
+                console.error('Fehler beim Abrufen der Server-Logs:', error);
+                document.getElementById('server-logs').innerHTML = '<div class="error">Fehler beim Laden der Server-Logs.</div>';
+                document.getElementById('activity-list').innerHTML = '<div class="error">Fehler beim Laden der Aktivitäten.</div>';
+            });
+        }
+        
+        // System-Konfiguration abrufen
+        function fetchSystemConfig() {
+            if (!userToken) return;
+            
+            fetch('/api/admin/config', {
+                headers: {
+                    'Authorization': `Bearer ${userToken}`
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    serverConfig = data.config;
+                    renderSystemConfig(data.config);
+                }
+            })
+            .catch(error => console.error('Fehler beim Abrufen der System-Konfiguration:', error));
+        }
+        
+        // Dashboard-Statistiken aktualisieren
+        function updateDashboardStats(stats) {
+            // Benutzerstatistiken
+            document.getElementById('user-count').textContent = stats.users.total;
+            document.getElementById('active-bots').textContent = stats.bots.total_active;
+            document.getElementById('verified-count').textContent = stats.users.verified;
+            document.getElementById('banned-count').textContent = stats.users.banned;
+            
+            // Login-Statistiken
+            document.getElementById('logins-today').textContent = stats.logins.today;
+            document.getElementById('logins-24h').textContent = stats.logins.last_24h;
+            document.getElementById('logins-7d').textContent = stats.logins.last_7d;
+            document.getElementById('failed-logins').textContent = stats.logins.failed || 0;
+            
+            // Server-Statistiken
+            const uptimeHours = Math.floor(stats.system.uptime_minutes / 60);
+            document.getElementById('server-uptime').textContent = `${uptimeHours}h`;
+            document.getElementById('total-errors').textContent = stats.system.errors || 0;
+            document.getElementById('total-requests').textContent = stats.system.total_requests || 0;
+            document.getElementById('bot-starts').textContent = stats.system.bot_starts || 0;
+            
+            // Bot-Statistiken im Bot-Tab
+            document.getElementById('total-active-bots').textContent = stats.bots.total_active;
+            
+            // Häufigste Version ermitteln
+            let mostUsedVersion = '-';
+            let maxCount = 0;
+            for (const [version, count] of Object.entries(stats.bots.minecraft_versions || {})) {
+                if (count > maxCount) {
+                    mostUsedVersion = version;
+                    maxCount = count;
+                }
+            }
+            document.getElementById('most-used-version').textContent = mostUsedVersion;
+            
+            // Eindeutige Server zählen
+            const uniqueServers = Object.keys(stats.bots.servers || {}).length;
+            document.getElementById('unique-servers').textContent = uniqueServers;
+            
+            // Durchschnittliche Uptime berechnen (Platzhalter, da keine echten Daten vorhanden)
+            document.getElementById('avg-uptime').textContent = stats.bots.avg_uptime || '0min';
+        }
+        
+        // Benutzerliste rendern
+        function renderUserList(users) {
+            const userListElement = document.getElementById('user-list');
+            
+            if (!users || users.length === 0) {
+                userListElement.innerHTML = '<div class="no-data">Keine Benutzer gefunden.</div>';
+                return;
+            }
+            
+            let html = '';
+            
+            users.forEach(user => {
+                const botStatus = user.has_active_bot ? 
+                    `<span class="status online">Bot aktiv</span>` : 
+                    `<span class="status offline">Kein Bot</span>`;
+                
+                const bannedStatus = user.banned ? 
+                    `<span class="status banned">Gesperrt</span>` : 
+                    (user.verified ? `<span class="status verified">Verifiziert</span>` : `<span class="status unverified">Unverifiziert</span>`);
+                
+                const warningBadge = user.warnings > 0 ? 
+                    `<span class="warning-badge">${user.warnings}</span>` : '';
+                
+                html += `
+                <div class="user-item" data-uid="${user.uid}" data-email="${user.email}">
+                    <div class="user-info">
+                        <div class="user-name">${user.username} ${warningBadge}</div>
+                        <div class="user-email">${user.email}</div>
+                        <div class="user-status">
+                            ${bannedStatus}
+                            ${botStatus}
+                        </div>
+                    </div>
+                    <div class="user-actions">
+                        <button class="view-btn" onclick="viewUserDetails('${user.uid}')">Details</button>
+                        ${user.banned ? 
+                            `<button class="unban-btn" onclick="unbanUser('${user.email}')">Entsperren</button>` : 
+                            `<button class="ban-btn" onclick="banUser('${user.email}')">Sperren</button>`
+                        }
+                        <button class="warn-btn" onclick="warnUser('${user.email}')">Verwarnen</button>
+                    </div>
+                </div>`;
+            });
+            
+            userListElement.innerHTML = html;
+        }
+        
+        // Benutzerliste filtern
+        function filterUserList() {
+            if (!userListData || userListData.length === 0) return;
+            
+            const searchTerm = document.getElementById('user-search').value.toLowerCase();
+            const showVerified = document.getElementById('filter-verified').checked;
+            const showUnverified = document.getElementById('filter-unverified').checked;
+            const showBanned = document.getElementById('filter-banned').checked;
+            const showWithBots = document.getElementById('filter-active-bots').checked;
+            
+            const filteredUsers = userListData.filter(user => {
+                // Suche
+                const matchesSearch = searchTerm === '' || 
+                    user.username.toLowerCase().includes(searchTerm) || 
+                    user.email.toLowerCase().includes(searchTerm);
+                
+                // Status-Filter
+                const matchesVerified = (user.verified && showVerified) || (!user.verified && showUnverified);
+                const matchesBanned = (user.banned && showBanned) || (!user.banned && true); // Zeige Nicht-Gesperrte immer
+                const matchesWithBots = (user.has_active_bot && showWithBots) || (!user.has_active_bot && true); // Zeige ohne Bots immer
+                
+                return matchesSearch && matchesVerified && matchesBanned && matchesWithBots;
+            });
+            
+            renderUserList(filteredUsers);
+        }
+        
+        // Bot-Liste rendern
+        function renderBotList(bots) {
+            const botListElement = document.getElementById('active-bot-list');
+            
+            if (!bots || bots.length === 0) {
+                botListElement.innerHTML = '<div class="no-data">Keine aktiven Bots gefunden.</div>';
+                return;
+            }
+            
+            let html = '';
+            
+            bots.forEach(bot => {
+                const statusClass = bot.status === 'online' ? 'online' : 'offline';
+                const uptimeText = bot.uptime ? `${Math.floor(bot.uptime / 60)}h ${bot.uptime % 60}m` : '0m';
+                
+                html += `
+                <div class="bot-item" data-username="${bot.owner.username}">
+                    <div class="bot-info">
+                        <div class="bot-name">${bot.bot_name}</div>
+                        <div class="bot-server">${bot.server_ip} (${bot.mc_version})</div>
+                        <div class="bot-status">
+                            <span class="status ${statusClass}">${bot.status === 'online' ? 'Online' : 'Offline'}</span>
+                            <span class="uptime">${uptimeText}</span>
+                        </div>
+                        <div class="bot-owner">Benutzer: ${bot.owner.username}</div>
+                    </div>
+                    <div class="bot-actions">
+                        <button class="view-btn" onclick="viewBotDetails('${bot.owner.username}')">Details</button>
+                        <button class="stop-btn" onclick="stopBot('${bot.owner.username}')">Stoppen</button>
+                    </div>
+                </div>`;
+            });
+            
+            botListElement.innerHTML = html;
+        }
+        
+        // Server-Logs rendern
+        function renderServerLogs(logs, typeFilter) {
+            const serverLogsElement = document.getElementById('server-logs');
+            const errorLogsElement = document.getElementById('error-logs');
+            
+            if (!logs || logs.length === 0) {
+                serverLogsElement.innerHTML = '<div class="no-data">Keine Logs gefunden.</div>';
+                errorLogsElement.innerHTML = '<div class="no-data">Keine Fehler gefunden.</div>';
+                return;
+            }
+            
+            // Gefilterte Logs
+            const filteredLogs = logs.filter(log => typeFilter.includes(log.type?.toLowerCase() || 'unknown'));
+            
+            // Nur Fehler-Logs
+            const errorLogs = logs.filter(log => log.type?.toLowerCase() === 'error');
+            
+            // Server-Logs rendern
+            let serverLogsHtml = '';
+            filteredLogs.forEach(log => {
+                const logClass = log.type?.toLowerCase() || 'unknown';
+                const timestamp = log.timestamp ? new Date(log.timestamp).toLocaleString() : 'Unbekannt';
+                
+                serverLogsHtml += `
+                <div class="log-item ${logClass}">
+                    <span class="log-time">${timestamp}</span>
+                    <span class="log-type">[${log.type?.toUpperCase() || 'UNKNOWN'}]</span>
+                    <span class="log-message">${log.message}</span>
+                </div>`;
+            });
+            
+            // Fehler-Logs rendern
+            let errorLogsHtml = '';
+            errorLogs.forEach(log => {
+                const timestamp = log.timestamp ? new Date(log.timestamp).toLocaleString() : 'Unbekannt';
+                
+                errorLogsHtml += `
+                <div class="log-item error">
+                    <span class="log-time">${timestamp}</span>
+                    <span class="log-message">${log.message}</span>
+                </div>`;
+            });
+            
+            serverLogsElement.innerHTML = serverLogsHtml || '<div class="no-data">Keine Logs gefunden.</div>';
+            errorLogsElement.innerHTML = errorLogsHtml || '<div class="no-data">Keine Fehler gefunden.</div>';
+        }
+        
+        // Aktivitäts-Logs für Dashboard rendern
+        function renderActivityLogs(logs) {
+            const activityListElement = document.getElementById('activity-list');
+            
+            if (!logs || logs.length === 0) {
+                activityListElement.innerHTML = '<div class="no-data">Keine Aktivitäten gefunden.</div>';
+                return;
+            }
+            
+            let html = '';
+            
+            logs.forEach(log => {
+                const logClass = log.type?.toLowerCase() || 'unknown';
+                const timestamp = log.timestamp ? new Date(log.timestamp).toLocaleString() : 'Unbekannt';
+                
+                html += `
+                <div class="log-item ${logClass}">
+                    <span class="log-time">${timestamp}</span>
+                    <span class="log-message">${log.message}</span>
+                </div>`;
+            });
+            
+            activityListElement.innerHTML = html;
+        }
+        
+        // System-Konfiguration rendern
+        function renderSystemConfig(config) {
+            // Basis-Konfiguration
+            document.getElementById('max-bots-per-user').value = config.max_bots_per_user || 1;
+            document.getElementById('auto-ban-warnings').value = config.auto_ban_after_warnings || 5;
+            document.getElementById('max-inactive-days').value = config.max_inactive_days || 90;
+            document.getElementById('verification-required').value = config.verification_required ? 'true' : 'false';
+            
+            // Minecraft-Versionen
+            const versionsContainer = document.getElementById('mc-versions');
+            if (versionsContainer) {
+                const checkboxes = versionsContainer.querySelectorAll('input[type="checkbox"]');
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = config.supported_versions?.includes(checkbox.value) || false;
+                });
+            }
+            
+            // Standard-Version
+            const defaultVersionSelect = document.getElementById('default-version');
+            if (defaultVersionSelect) {
+                defaultVersionSelect.value = config.default_version || '1.21.4';
+            }
+            
+            // Server-Listen
+            document.getElementById('server-whitelist').value = (config.server_whitelist || []).join('\n');
+            document.getElementById('server-blacklist').value = (config.server_blacklist || []).join('\n');
+        }
+        
+        // System-Konfiguration speichern
+        function saveSystemConfig() {
+            if (!userToken) return;
+            
+            const maxBotsPerUser = parseInt(document.getElementById('max-bots-per-user').value) || 1;
+            const autoBanWarnings = parseInt(document.getElementById('auto-ban-warnings').value) || 5;
+            const maxInactiveDays = parseInt(document.getElementById('max-inactive-days').value) || 90;
+            const verificationRequired = document.getElementById('verification-required').value === 'true';
+            
+            // Minecraft-Versionen
+            const supportedVersions = [];
+            const versionCheckboxes = document.querySelectorAll('#mc-versions input[type="checkbox"]:checked');
+            versionCheckboxes.forEach(checkbox => {
+                supportedVersions.push(checkbox.value);
+            });
+            
+            const defaultVersion = document.getElementById('default-version').value;
+            
+            // Server-Listen
+            const serverWhitelist = document.getElementById('server-whitelist').value
+                .split('\n')
+                .map(line => line.trim())
+                .filter(line => line !== '');
+                
+            const serverBlacklist = document.getElementById('server-blacklist').value
+                .split('\n')
+                .map(line => line.trim())
+                .filter(line => line !== '');
+            
+            // Konfigurationsobjekt erstellen
+            const configData = {
+                max_bots_per_user: maxBotsPerUser,
+                auto_ban_after_warnings: autoBanWarnings,
+                max_inactive_days: maxInactiveDays,
+                verification_required: verificationRequired,
+                supported_versions: supportedVersions,
+                default_version: defaultVersion,
+                server_whitelist: serverWhitelist,
+                server_blacklist: serverBlacklist
+            };
+            
+            // Status anzeigen
+            const statusElement = document.getElementById('config-status');
+            statusElement.textContent = 'Konfiguration wird gespeichert...';
+            statusElement.className = 'status-message info';
+            
+            // Konfiguration an Server senden
+            fetch('/api/admin/config/update', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${userToken}`
+                },
+                body: JSON.stringify({ config: configData })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    statusElement.textContent = 'Konfiguration erfolgreich gespeichert!';
+                    statusElement.className = 'status-message success';
+                    
+                    // Aktualisierte Konfiguration speichern
+                    serverConfig = data.config;
+                    
+                    // Nach 3 Sekunden Statusmeldung ausblenden
+                    setTimeout(() => {
+                        statusElement.textContent = '';
+                        statusElement.className = 'status-message';
+                    }, 3000);
+                } else {
+                    statusElement.textContent = `Fehler: ${data.error}`;
+                    statusElement.className = 'status-message error';
+                }
+            })
+            .catch(error => {
+                console.error('Fehler beim Speichern der Konfiguration:', error);
+                statusElement.textContent = 'Fehler beim Speichern der Konfiguration.';
+                statusElement.className = 'status-message error';
+            });
+        }
+        
+        // Benutzerdetails anzeigen
+        function viewUserDetails(userId) {
+            if (!userToken || !userId) return;
+            
+            // Modal anzeigen
+            const modal = document.getElementById('user-details-modal');
+            const detailsContent = document.getElementById('user-details-content');
+            
+            // Ladeanzeige
+            detailsContent.innerHTML = '<div class="loading">Benutzerdaten werden geladen...</div>';
+            modal.style.display = 'block';
+            activeModal = 'user-details';
+            
+            // Benutzerdetails abrufen
+            fetch(`/api/admin/user/${userId}`, {
+                headers: {
+                    'Authorization': `Bearer ${userToken}`
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Benutzerdaten speichern
+                    currentOpenUser = data.user;
+                    
+                    // Buttons entsprechend anpassen
+                    document.getElementById('ban-user-btn').style.display = data.user.banned ? 'none' : 'inline-block';
+                    document.getElementById('unban-user-btn').style.display = data.user.banned ? 'inline-block' : 'none';
+                    
+                    // HTML für Benutzerdetails erstellen
+                    let html = `
+                    <div class="user-details">
+                        <div class="detail-row">
+                            <div class="detail-label">Benutzername:</div>
+                            <div class="detail-value">${data.user.username}</div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">E-Mail:</div>
+                            <div class="detail-value">${data.user.email}</div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">Rolle:</div>
+                            <div class="detail-value">${data.user.role || 'Benutzer'}</div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">Status:</div>
+                            <div class="detail-value">
+                                ${data.user.banned ? 
+                                    `<span class="status banned">Gesperrt</span>` : 
+                                    (data.user.verified ? 
+                                        `<span class="status verified">Verifiziert</span>` : 
+                                        `<span class="status unverified">Unverifiziert</span>`)
+                                }
+                            </div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">Verwarnungen:</div>
+                            <div class="detail-value">${data.user.warnings || 0}</div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">Registriert am:</div>
+                            <div class="detail-value">${new Date(data.user.created_at).toLocaleString()}</div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">Letzter Login:</div>
+                            <div class="detail-value">${data.user.last_login ? new Date(data.user.last_login).toLocaleString() : 'Nie'}</div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">Login-Anzahl:</div>
+                            <div class="detail-value">${data.user.login_count || 0}</div>
+                        </div>`;
+                        
+                    // Bot-Informationen
+                    if (data.user.has_active_bot) {
+                        html += `
+                        <div class="detail-section">
+                            <h4>Aktiver Bot</h4>
+                            <div class="detail-row">
+                                <div class="detail-label">Server:</div>
+                                <div class="detail-value">${data.user.bot_info.server_ip}</div>
+                            </div>
+                            <div class="detail-row">
+                                <div class="detail-label">Bot-Name:</div>
+                                <div class="detail-value">${data.user.bot_info.bot_name}</div>
+                            </div>
+                            <div class="detail-row">
+                                <div class="detail-label">Version:</div>
+                                <div class="detail-value">${data.user.bot_info.version}</div>
+                            </div>
+                            <div class="detail-row">
+                                <div class="detail-label">Laufzeit:</div>
+                                <div class="detail-value">${data.user.bot_info.uptime ? 
+                                    `${Math.floor(data.user.bot_info.uptime / 60)}h ${data.user.bot_info.uptime % 60}m` : '0m'}</div>
+                            </div>
+                        </div>`;
+                    }
+                    
+                    // Aktive Sessions
+                    if (data.active_sessions && data.active_sessions.length > 0) {
+                        html += `
+                        <div class="detail-section">
+                            <h4>Aktive Sessions (${data.active_sessions.length})</h4>
+                            <div class="session-list">`;
+                        
+                        data.active_sessions.forEach(session => {
+                            html += `
+                            <div class="session-item">
+                                <div>Erstellt: ${new Date(session.created).toLocaleString()}</div>
+                                <div>Läuft ab: ${new Date(session.expires).toLocaleString()}</div>
+                            </div>`;
+                        });
+                        
+                        html += `
+                            </div>
+                        </div>`;
+                    }
+                    
+                    // Verwarnungshistorie
+                    if (data.user.warning_history && data.user.warning_history.length > 0) {
+                        html += `
+                        <div class="detail-section">
+                            <h4>Verwarnungshistorie</h4>
+                            <div class="warning-list">`;
+                        
+                        data.user.warning_history.forEach(warning => {
+                            html += `
+                            <div class="warning-item">
+                                <div class="warning-time">${new Date(warning.timestamp).toLocaleString()}</div>
+                                <div class="warning-by">Von: ${warning.by}</div>
+                                <div class="warning-reason">Grund: ${warning.reason}</div>
+                            </div>`;
+                        });
+                        
+                        html += `
+                            </div>
+                        </div>`;
+                    }
+                    
+                    html += `</div>`;
+                    
+                    // HTML in Modal einfügen
+                    detailsContent.innerHTML = html;
+                    
+                } else {
+                    detailsContent.innerHTML = `<div class="error">Fehler beim Laden der Benutzerdetails: ${data.error}</div>`;
+                }
+            })
+            .catch(error => {
+                console.error('Fehler beim Abrufen der Benutzerdetails:', error);
+                detailsContent.innerHTML = '<div class="error">Fehler beim Laden der Benutzerdetails.</div>';
+            });
+        }
+        
+        // Bot-Details anzeigen
+        function viewBotDetails(username) {
+            if (!userToken || !username) return;
+            
+            // Finde den Bot in der Liste
+            const bot = botListData.find(b => b.owner.username === username);
+            if (!bot) return;
+            
+            // Bot speichern
+            currentOpenBot = bot;
+            
+            // Modal anzeigen
+            const modal = document.getElementById('bot-details-modal');
+            const detailsContent = document.getElementById('bot-details-content');
+            
+            // HTML für Bot-Details erstellen
+            const statusClass = bot.status === 'online' ? 'online' : 'offline';
+            const uptimeText = bot.uptime ? `${Math.floor(bot.uptime / 60)}h ${bot.uptime % 60}m` : '0m';
+            
+            let html = `
+            <div class="bot-details">
+                <div class="detail-row">
+                    <div class="detail-label">Bot-Name:</div>
+                    <div class="detail-value">${bot.bot_name}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Server:</div>
+                    <div class="detail-value">${bot.server_ip}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Minecraft-Version:</div>
+                    <div class="detail-value">${bot.mc_version}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Status:</div>
+                    <div class="detail-value">
+                        <span class="status ${statusClass}">${bot.status === 'online' ? 'Online' : 'Offline'}</span>
+                    </div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Laufzeit:</div>
+                    <div class="detail-value">${uptimeText}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Benutzer:</div>
+                    <div class="detail-value">${bot.owner.username}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">E-Mail:</div>
+                    <div class="detail-value">${bot.owner.email}</div>
+                </div>
+            </div>
+            
+            <div class="detail-section">
+                <h4>Bot-Logs</h4>
+                <div class="bot-logs">`;
+            
+            // Anzeigen der Bot-Logs, falls vorhanden
+            if (bot.details && bot.details.logs && bot.details.logs.length > 0) {
+                bot.details.logs.slice(-10).forEach(log => {
+                    const logClass = log.type || 'info';
+                    html += `
+                    <div class="log-item ${logClass}">
+                        <span class="log-message">${log.message}</span>
+                    </div>`;
+                });
+            } else {
+                html += `<div class="no-data">Keine Logs verfügbar</div>`;
+            }
+            
+            html += `
+                </div>
+            </div>`;
+            
+            // HTML in Modal einfügen
+            detailsContent.innerHTML = html;
+            modal.style.display = 'block';
+            activeModal = 'bot-details';
+        }
+        
+        // Benutzer sperren
+        function banUser(email) {
+            if (!userToken || !email) return;
+            
+            const reason = prompt('Gib einen Grund für die Sperrung ein:');
+            if (reason === null) return; // Abgebrochen
+            
+            fetch('/api/admin/user/ban', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${userToken}`
+                },
+                body: JSON.stringify({ email, reason })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(`Benutzer wurde gesperrt: ${data.message}`);
+                    
+                    // Wenn das Benutzerdetails-Modal geöffnet ist, schließen
+                    if (activeModal === 'user-details') {
+                        document.getElementById('user-details-modal').style.display = 'none';
+                        activeModal = null;
+                    }
+                    
+                    // Daten aktualisieren
+                    loadAdminData();
+                } else {
+                    alert(`Fehler: ${data.error}`);
+                }
+            })
+            .catch(error => {
+                console.error('Fehler beim Sperren des Benutzers:', error);
+                alert('Fehler beim Sperren des Benutzers.');
+            });
+        }
+        
+        // Benutzer entsperren
+        function unbanUser(email) {
+            if (!userToken || !email) return;
+            
+            if (!confirm(`Willst du die Sperre für diesen Benutzer wirklich aufheben?`)) return;
+            
+            fetch('/api/admin/user/unban', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${userToken}`
+                },
+                body: JSON.stringify({ email })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(`Benutzer wurde entsperrt: ${data.message}`);
+                    
+                    // Wenn das Benutzerdetails-Modal geöffnet ist, schließen
+                    if (activeModal === 'user-details') {
+                        document.getElementById('user-details-modal').style.display = 'none';
+                        activeModal = null;
+                    }
+                    
+                    // Daten aktualisieren
+                    loadAdminData();
+                } else {
+                    alert(`Fehler: ${data.error}`);
+                }
+            })
+            .catch(error => {
+                console.error('Fehler beim Entsperren des Benutzers:', error);
+                alert('Fehler beim Entsperren des Benutzers.');
+            });
+        }
+        
+        // Benutzer verwarnen
+        function warnUser(email) {
+            if (!userToken || !email) return;
+            
+            const reason = prompt('Gib einen Grund für die Verwarnung ein:');
+            if (reason === null) return; // Abgebrochen
+            
+            fetch('/api/admin/user/warn', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${userToken}`
+                },
+                body: JSON.stringify({ email, reason })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    let message = `Benutzer wurde verwarnt: ${data.message}`;
+                    if (data.auto_banned) {
+                        message += '\nDer Benutzer wurde automatisch gesperrt, da er zu viele Verwarnungen hat.';
+                    }
+                    alert(message);
+                    
+                    // Wenn das Benutzerdetails-Modal geöffnet ist, schließen
+                    if (activeModal === 'user-details') {
+                        document.getElementById('user-details-modal').style.display = 'none';
+                        activeModal = null;
+                    }
+                    
+                    // Daten aktualisieren
+                    loadAdminData();
+                } else {
+                    alert(`Fehler: ${data.error}`);
+                }
+            })
+            .catch(error => {
+                console.error('Fehler beim Verwarnen des Benutzers:', error);
+                alert('Fehler beim Verwarnen des Benutzers.');
+            });
+        }
+        
+        // Bot stoppen
+        function stopBot(username) {
+            if (!userToken || !username) return;
+            
+            if (!confirm(`Willst du den Bot von ${username} wirklich stoppen?`)) return;
+            
+            fetch('/api/admin/bot/stop', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${userToken}`
+                },
+                body: JSON.stringify({ username })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(`Bot wurde gestoppt: ${data.message}`);
+                    
+                    // Wenn das Bot-Details-Modal geöffnet ist, schließen
+                    if (activeModal === 'bot-details') {
+                        document.getElementById('bot-details-modal').style.display = 'none';
+                        activeModal = null;
+                    }
+                    
+                    // Daten aktualisieren
+                    loadAdminData();
+                } else {
+                    alert(`Fehler: ${data.error}`);
+                }
+            })
+            .catch(error => {
+                console.error('Fehler beim Stoppen des Bots:', error);
+                alert('Fehler beim Stoppen des Bots.');
+            });
+        }
+        
+        // Bot-Logs anzeigen
+        function viewBotLogs(username) {
+            if (!userToken || !username) return;
+            
+            // Wechsle zum Logs-Tab und filtere nach Bot-Logs für diesen Benutzer
+            const logsTabButton = document.querySelector('.tab-button[data-tab="logs-tab"]');
+            logsTabButton.click();
+            
+            // Hier könnte eine spezielle Filterung für Bot-Logs implementiert werden
+            document.getElementById('user-search').value = username;
+            filterUserList();
+        }
+    </script>
+</body>
+</html>
