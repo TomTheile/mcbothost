@@ -341,7 +341,7 @@ app.post('/api/minecraft/start-bot', (req, res) => {
     }
 });
 
-app.post('/api/minecraft/stop-bot', (req, res) => {
+app.post('/api/minecraft/stop-bot', async (req, res) => {
     res.setHeader('Content-Type', 'application/json');
     const { username } = req.body;
 
@@ -354,7 +354,7 @@ app.post('/api/minecraft/stop-bot', (req, res) => {
 
     try {
         // Bot stoppen
-        const result = minecraftBot.stopBot(username);
+        const result = await minecraftBot.stopBot(username);
 
         // Ergebnis zurückgeben
         if (result.success) {
@@ -377,7 +377,7 @@ app.post('/api/minecraft/stop-bot', (req, res) => {
     }
 });
 
-app.post('/api/minecraft/send-command', (req, res) => {
+app.post('/api/minecraft/send-command', async (req, res) => {
     res.setHeader('Content-Type', 'application/json');
     const { username, command } = req.body;
 
@@ -390,7 +390,7 @@ app.post('/api/minecraft/send-command', (req, res) => {
 
     try {
         // Befehl an Bot senden
-        const result = minecraftBot.sendCommand(username, command);
+        const result = await minecraftBot.sendCommand(username, command);
 
         // Ergebnis zurückgeben
         if (result.success) {
