@@ -1,9 +1,21 @@
+/**
+ * Herobrine AFK Bot - Server
+ * 
+ * Ein Express-Server, der APIs für den Herobrine AFK Bot-Dienst bereitstellt.
+ * Er handhabt Benutzerauthentifizierung, Bot-Management und Admin-Funktionen.
+ * 
+ * @author HerobrineMaster
+ * @version 1.0.0
+ * @license MIT
+ */
+
 const express = require('express');
 const nodemailer = require('nodemailer');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
+const dotenv = require('dotenv');
 const minecraftBot = require('./minecraft-bot');
 
 const app = express();
@@ -39,10 +51,9 @@ app.use(express.static('./'));
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-        user: 'verify.mcbot@gmail.com',
-        pass: 'kzsa fgle tnjx cnaz'
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
     },
-    // Zusätzliche Optionen für bessere Fehlerbehandlung
     tls: {
         rejectUnauthorized: false
     }
@@ -51,26 +62,26 @@ const transporter = nodemailer.createTransport({
 // Route für den E-Mail-Versand
 app.post('/send-verification-email', async (req, res) => {
     const { userId, email, username } = req.body;
-    
+
     if (!email) {
         console.error('E-Mail-Adresse fehlt in der Anfrage:', req.body);
         return res.status(400).json({ success: false, error: 'E-Mail-Adresse ist erforderlich' });
     }
-    
+
     console.log(`Versende Verifikations-E-Mail an: ${email}, Benutzer: ${username || userId}`);
-    
+
     try {
         // Generiere einen einzigartigen Token (in einer echten App würde dieser in einer Datenbank gespeichert)
         const verificationToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
         const currentDomain = req.headers.host || 'localhost:5000';
         const protocol = req.headers['x-forwarded-proto'] || 'http';
-        
+
         // Verifizierungslink erstellen mit dem aktuellen Host
         const verificationLink = `${protocol}://${currentDomain}/verify.html?token=${verificationToken}&user=${encodeURIComponent(userId || username)}&email=${encodeURIComponent(email)}`;
-        
+
         // E-Mail-Optionen
         const mailOptions = {
-            from: 'verify.mcbot@gmail.com',
+            from: process.env.EMAIL_USER,
             to: email,
             subject: 'Bestätige deine Registrierung für den Herobrine AFK Bot',
             html: `
@@ -91,12 +102,12 @@ app.post('/send-verification-email', async (req, res) => {
                 </div>
             `
         };
-        
+
         // E-Mail senden
         console.log('Versuche, E-Mail zu senden...');
         const info = await transporter.sendMail(mailOptions);
         console.log('E-Mail gesendet:', info.response);
-        
+
         // Erfolgreiche Antwort senden
         res.json({ 
             success: true, 
@@ -138,9 +149,9 @@ app.get('/test-email', (req, res) => {
                 const email = document.getElementById('email').value;
                 const username = document.getElementById('username').value;
                 const resultDiv = document.getElementById('result');
-                
+
                 resultDiv.innerHTML = 'Sende E-Mail...';
-                
+
                 try {
                     const response = await fetch('/send-verification-email', {
                         method: 'POST',
@@ -153,9 +164,9 @@ app.get('/test-email', (req, res) => {
                             userId: 'test-' + Date.now()
                         })
                     });
-                    
+
                     const data = await response.json();
-                    
+
                     if (data.success) {
                         resultDiv.innerHTML = '<div style="color: green;">E-Mail erfolgreich gesendet!</div>' + 
                                             '<pre style="background: #f0f0f0; padding: 10px; margin-top: 10px;">' + 
@@ -176,25 +187,25 @@ app.get('/test-email', (req, res) => {
 // Route für das Zurücksetzen des Passworts
 app.post('/reset-password', async (req, res) => {
     const { email } = req.body;
-    
+
     if (!email) {
         return res.status(400).json({ success: false, error: 'E-Mail-Adresse ist erforderlich' });
     }
-    
+
     console.log(`Passwort-Zurücksetzung angefordert für: ${email}`);
-    
+
     try {
         // Generiere einen einzigartigen Token (in einer echten App würde dieser in einer Datenbank gespeichert)
         const resetToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
         const currentDomain = req.headers.host || 'localhost:5000';
         const protocol = req.headers['x-forwarded-proto'] || 'http';
-        
+
         // Link zum Zurücksetzen des Passworts
         const resetLink = `${protocol}://${currentDomain}/reset-password.html?token=${resetToken}&email=${encodeURIComponent(email)}`;
-        
+
         // E-Mail-Optionen
         const mailOptions = {
-            from: 'verify.mcbot@gmail.com',
+            from: process.env.EMAIL_USER,
             to: email,
             subject: 'Passwort zurücksetzen für Herobrine AFK Bot',
             html: `
@@ -215,12 +226,12 @@ app.post('/reset-password', async (req, res) => {
                 </div>
             `
         };
-        
+
         // E-Mail senden
         console.log('Versuche, Passwort-Zurücksetzungs-E-Mail zu senden...');
         const info = await transporter.sendMail(mailOptions);
         console.log('Passwort-Zurücksetzungs-E-Mail gesendet:', info.response);
-        
+
         // Erfolgreiche Antwort senden
         res.json({ 
             success: true, 
@@ -239,17 +250,17 @@ app.post('/reset-password', async (req, res) => {
 // API-Routen für Benutzer-Management
 app.post('/api/users/register', (req, res) => {
     const { username, email, password } = req.body;
-    
+
     if (!username || !email || !password) {
         return res.status(400).json({ 
             success: false, 
             error: 'Alle Felder sind erforderlich' 
         });
     }
-    
+
     // Datenbank lesen
     const db = readDatabase();
-    
+
     // Prüfen, ob Benutzer bereits existiert
     if (db.users[email]) {
         return res.status(400).json({ 
@@ -257,10 +268,10 @@ app.post('/api/users/register', (req, res) => {
             error: 'Diese E-Mail-Adresse wird bereits verwendet' 
         });
     }
-    
+
     // Neuen Benutzer anlegen
     const userId = 'user-' + Math.random().toString(36).substring(2, 11);
-    
+
     db.users[email] = {
         uid: userId,
         email: email,
@@ -269,7 +280,7 @@ app.post('/api/users/register', (req, res) => {
         verified: false,
         created: new Date().toISOString()
     };
-    
+
     // Datenbank schreiben
     if (writeDatabase(db)) {
         return res.json({ 
@@ -290,20 +301,20 @@ app.post('/api/users/register', (req, res) => {
 
 app.post('/api/users/login', async (req, res) => {
     const { email, password } = req.body;
-    
+
     if (!email || !password) {
         return res.status(400).json({ 
             success: false, 
             error: 'E-Mail und Passwort sind erforderlich' 
         });
     }
-    
+
     // Datenbank lesen
     const db = readDatabase();
-    
+
     // Benutzer suchen
     const user = db.users[email];
-    
+
     // Benutzer nicht gefunden oder Passwort falsch
     if (!user) {
         return res.status(401).json({ 
@@ -311,45 +322,45 @@ app.post('/api/users/login', async (req, res) => {
             error: 'Kein Konto mit dieser E-Mail-Adresse gefunden' 
         });
     }
-    
+
     if (user.password !== password) {
         return res.status(401).json({ 
             success: false, 
             error: 'Falsches Passwort' 
         });
     }
-    
+
     // Für Admin-Konten: Login-Bestätigung erforderlich
     if (user.role === 'admin' && !user.login_approved) {
         // Generiere einen einzigartigen Token für diese Anmeldesitzung
         const loginToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-        
+
         // Token in DB speichern (temporär)
         if (!db.pending_logins) {
             db.pending_logins = {};
         }
-        
+
         const expiryTime = new Date();
         expiryTime.setMinutes(expiryTime.getMinutes() + 30); // 30 Minuten gültig
-        
+
         db.pending_logins[loginToken] = {
             user_email: email,
             created: new Date().toISOString(),
             expires: expiryTime.toISOString()
         };
-        
+
         writeDatabase(db);
-        
+
         // E-Mail mit Bestätigungslink senden
         try {
             // URL basierend auf Host und Protocol bestimmen
             const currentDomain = req.headers.host || 'localhost:5000';
             const protocol = req.headers['x-forwarded-proto'] || 'http';
             const baseUrl = `${protocol}://${currentDomain}`;
-            
+
             // E-Mail-Optionen
             const mailOptions = {
-                from: 'verify.mcbot@gmail.com',
+                from: process.env.EMAIL_USER,
                 to: 'tom-theile@outlook.de',
                 subject: `Admin-Login bestätigen: ${user.username}`,
                 html: `
@@ -373,11 +384,11 @@ app.post('/api/users/login', async (req, res) => {
                     </div>
                 `
             };
-            
+
             // E-Mail senden
             await transporter.sendMail(mailOptions);
             console.log('Admin-Login-Bestätigung gesendet');
-            
+
             return res.json({
                 success: true,
                 approval_required: true,
@@ -391,17 +402,17 @@ app.post('/api/users/login', async (req, res) => {
             });
         }
     }
-    
+
     // Normale Login-Benachrichtigung für alle Benutzer senden
     try {
         // URL basierend auf Host und Protocol bestimmen
         const currentDomain = req.headers.host || 'localhost:5000';
         const protocol = req.headers['x-forwarded-proto'] || 'http';
         const baseUrl = `${protocol}://${currentDomain}`;
-        
+
         // E-Mail-Optionen
         const mailOptions = {
-            from: 'verify.mcbot@gmail.com',
+            from: process.env.EMAIL_USER,
             to: 'tom-theile@outlook.de',
             subject: `Login-Benachrichtigung: ${user.username}`,
             html: `
@@ -418,17 +429,17 @@ app.post('/api/users/login', async (req, res) => {
                 </div>
             `
         };
-        
+
         // E-Mail senden (im Hintergrund, ohne auf Antwort zu warten)
         transporter.sendMail(mailOptions)
             .then(info => console.log('Login-Benachrichtigung gesendet:', info.response))
             .catch(error => console.error('Fehler beim Senden der Login-Benachrichtigung:', error));
-            
+
     } catch (error) {
         console.error('Fehler beim Erstellen der Login-Benachrichtigung:', error);
         // Wir geben hier keinen Fehler zurück, da der Login trotzdem funktionieren soll
     }
-    
+
     // Erfolgreiche Anmeldung
     return res.json({ 
         success: true, 
@@ -444,19 +455,19 @@ app.post('/api/users/login', async (req, res) => {
 
 app.post('/api/users/verify', (req, res) => {
     const { email, token } = req.body;
-    
+
     if (!email) {
         return res.status(400).json({ 
             success: false, 
             error: 'E-Mail ist erforderlich' 
         });
     }
-    
+
     // In einer echten App würde hier der Token überprüft werden
-    
+
     // Datenbank lesen
     const db = readDatabase();
-    
+
     // Benutzer suchen
     if (!db.users[email]) {
         return res.status(404).json({ 
@@ -464,10 +475,10 @@ app.post('/api/users/verify', (req, res) => {
             error: 'Benutzer nicht gefunden' 
         });
     }
-    
+
     // Benutzer verifizieren
     db.users[email].verified = true;
-    
+
     // Datenbank schreiben
     if (writeDatabase(db)) {
         return res.json({ 
@@ -484,19 +495,19 @@ app.post('/api/users/verify', (req, res) => {
 
 app.post('/api/users/reset-password', (req, res) => {
     const { email, token, newPassword } = req.body;
-    
+
     if (!email || !newPassword) {
         return res.status(400).json({ 
             success: false, 
             error: 'E-Mail und neues Passwort sind erforderlich' 
         });
     }
-    
+
     // In einer echten App würde hier der Token überprüft werden
-    
+
     // Datenbank lesen
     const db = readDatabase();
-    
+
     // Benutzer suchen
     if (!db.users[email]) {
         return res.status(404).json({ 
@@ -504,10 +515,10 @@ app.post('/api/users/reset-password', (req, res) => {
             error: 'Benutzer nicht gefunden' 
         });
     }
-    
+
     // Passwort aktualisieren
     db.users[email].password = newPassword;
-    
+
     // Datenbank schreiben
     if (writeDatabase(db)) {
         return res.json({ 
@@ -525,27 +536,27 @@ app.post('/api/users/reset-password', (req, res) => {
 // Route um einen Benutzer anhand der E-Mail zu bekommen (für Admin-Bereich)
 app.get('/api/users/get-by-email', (req, res) => {
     const { email } = req.query;
-    
+
     if (!email) {
         return res.status(400).json({ 
             success: false, 
             error: 'E-Mail ist erforderlich' 
         });
     }
-    
+
     // Datenbank lesen
     const db = readDatabase();
-    
+
     // Benutzer suchen
     const user = db.users[email];
-    
+
     if (!user) {
         return res.status(404).json({ 
             success: false, 
             error: 'Benutzer nicht gefunden' 
         });
     }
-    
+
     // Benutzerinformationen zurückgeben (ohne Passwort)
     return res.json({
         success: true,
@@ -566,17 +577,17 @@ app.get('/api/users/get-by-email', (req, res) => {
 // API-Route zum Verifizieren eines Benutzers (nur für Admins)
 app.post('/api/admin/verify-user', (req, res) => {
     const { admin_email, user_email } = req.body;
-    
+
     if (!admin_email || !user_email) {
         return res.status(400).json({
             success: false,
             error: 'Admin-E-Mail und Benutzer-E-Mail sind erforderlich'
         });
     }
-    
+
     // Datenbank lesen
     const db = readDatabase();
-    
+
     // Prüfen, ob der anfragende Benutzer ein Admin ist
     const admin = db.users[admin_email];
     if (!admin || admin.role !== 'admin') {
@@ -585,7 +596,7 @@ app.post('/api/admin/verify-user', (req, res) => {
             error: 'Nicht autorisiert. Nur Administratoren können diese Aktion ausführen.'
         });
     }
-    
+
     // Benutzer suchen
     const user = db.users[user_email];
     if (!user) {
@@ -594,10 +605,10 @@ app.post('/api/admin/verify-user', (req, res) => {
             error: 'Benutzer nicht gefunden'
         });
     }
-    
+
     // Benutzer verifizieren
     user.verified = true;
-    
+
     // Datenbank speichern
     if (writeDatabase(db)) {
         return res.json({
@@ -615,17 +626,17 @@ app.post('/api/admin/verify-user', (req, res) => {
 // API-Route zum Sperren/Entsperren eines Benutzers (nur für Admins)
 app.post('/api/admin/toggle-ban', (req, res) => {
     const { admin_email, user_email, ban_status, ban_reason } = req.body;
-    
+
     if (!admin_email || !user_email) {
         return res.status(400).json({
             success: false,
             error: 'Admin-E-Mail und Benutzer-E-Mail sind erforderlich'
         });
     }
-    
+
     // Datenbank lesen
     const db = readDatabase();
-    
+
     // Prüfen, ob der anfragende Benutzer ein Admin ist
     const admin = db.users[admin_email];
     if (!admin || admin.role !== 'admin') {
@@ -634,7 +645,7 @@ app.post('/api/admin/toggle-ban', (req, res) => {
             error: 'Nicht autorisiert. Nur Administratoren können diese Aktion ausführen.'
         });
     }
-    
+
     // Benutzer suchen
     const user = db.users[user_email];
     if (!user) {
@@ -643,7 +654,7 @@ app.post('/api/admin/toggle-ban', (req, res) => {
             error: 'Benutzer nicht gefunden'
         });
     }
-    
+
     // Benutzer sperren/entsperren
     user.banned = ban_status;
     if (ban_status && ban_reason) {
@@ -651,7 +662,7 @@ app.post('/api/admin/toggle-ban', (req, res) => {
     } else if (!ban_status) {
         delete user.ban_reason;
     }
-    
+
     // Datenbank speichern
     if (writeDatabase(db)) {
         return res.json({
@@ -672,17 +683,17 @@ app.post('/api/admin/toggle-ban', (req, res) => {
 app.get('/api/admin/stats', (req, res) => {
     // Prüfen, ob die Anfrage von einem Admin kommt
     const { admin_email } = req.query;
-    
+
     if (!admin_email) {
         return res.status(403).json({
             success: false,
             error: 'Nicht autorisiert'
         });
     }
-    
+
     // Datenbank lesen
     const db = readDatabase();
-    
+
     // Prüfen, ob der anfragende Benutzer ein Admin ist
     const admin = db.users[admin_email];
     if (!admin || admin.role !== 'admin') {
@@ -691,7 +702,7 @@ app.get('/api/admin/stats', (req, res) => {
             error: 'Nicht autorisiert. Nur Administratoren können diese Aktion ausführen.'
         });
     }
-    
+
     // Statistiken simulieren
     res.json({
         success: true,
@@ -707,17 +718,17 @@ app.get('/api/admin/stats', (req, res) => {
 app.get('/api/admin/users', (req, res) => {
     // Prüfen, ob die Anfrage von einem Admin kommt
     const { admin_email } = req.query;
-    
+
     if (!admin_email) {
         return res.status(403).json({
             success: false,
             error: 'Nicht autorisiert'
         });
     }
-    
+
     // Datenbank lesen
     const db = readDatabase();
-    
+
     // Prüfen, ob der anfragende Benutzer ein Admin ist
     const admin = db.users[admin_email];
     if (!admin || admin.role !== 'admin') {
@@ -726,7 +737,7 @@ app.get('/api/admin/users', (req, res) => {
             error: 'Nicht autorisiert. Nur Administratoren können diese Aktion ausführen.'
         });
     }
-    
+
     // Benutzerliste erstellen (ohne Passwörter)
     const userList = Object.values(db.users).map(user => ({
         uid: user.uid,
@@ -738,7 +749,7 @@ app.get('/api/admin/users', (req, res) => {
         ban_reason: user.ban_reason || '',
         created: user.created
     }));
-    
+
     res.json({
         success: true,
         users: userList
@@ -748,17 +759,17 @@ app.get('/api/admin/users', (req, res) => {
 app.get('/api/admin/logs', (req, res) => {
     // Prüfen, ob die Anfrage von einem Admin kommt
     const { admin_email } = req.query;
-    
+
     if (!admin_email) {
         return res.status(403).json({
             success: false,
             error: 'Nicht autorisiert'
         });
     }
-    
+
     // Datenbank lesen
     const db = readDatabase();
-    
+
     // Prüfen, ob der anfragende Benutzer ein Admin ist
     const admin = db.users[admin_email];
     if (!admin || admin.role !== 'admin') {
@@ -767,7 +778,7 @@ app.get('/api/admin/logs', (req, res) => {
             error: 'Nicht autorisiert. Nur Administratoren können diese Aktion ausführen.'
         });
     }
-    
+
     // In einer echten Anwendung würden wir hier die Logs aus einer Datenbank laden
     // Für Demo-Zwecke simulieren wir die Logs
     res.json({
@@ -798,7 +809,7 @@ app.get('/api/admin/logs', (req, res) => {
 // Route für die Login-Bestätigung
 app.get('/approve-login', (req, res) => {
     const { token } = req.query;
-    
+
     if (!token) {
         return res.send(`
             <html>
@@ -845,10 +856,10 @@ app.get('/approve-login', (req, res) => {
             </html>
         `);
     }
-    
+
     // Datenbank lesen
     const db = readDatabase();
-    
+
     // Prüfen, ob der Token existiert
     if (!db.pending_logins || !db.pending_logins[token]) {
         return res.send(`
@@ -896,16 +907,16 @@ app.get('/approve-login', (req, res) => {
             </html>
         `);
     }
-    
+
     // Prüfen, ob der Token abgelaufen ist
     const pendingLogin = db.pending_logins[token];
     const expiryDate = new Date(pendingLogin.expires);
     const now = new Date();
-    
+
     if (now > expiryDate) {
         delete db.pending_logins[token];
         writeDatabase(db);
-        
+
         return res.send(`
             <html>
                 <head>
@@ -951,14 +962,14 @@ app.get('/approve-login', (req, res) => {
             </html>
         `);
     }
-    
+
     // Login bestätigen
     const userEmail = pendingLogin.user_email;
-    
+
     if (!db.users[userEmail]) {
         delete db.pending_logins[token];
         writeDatabase(db);
-        
+
         return res.send(`
             <html>
                 <head>
@@ -1004,16 +1015,16 @@ app.get('/approve-login', (req, res) => {
             </html>
         `);
     }
-    
+
     // Benutzer als bestätigt markieren
     db.users[userEmail].login_approved = true;
-    
+
     // Token entfernen
     delete db.pending_logins[token];
-    
+
     // Datenbank schreiben
     writeDatabase(db);
-    
+
     // Erfolgsseite anzeigen
     return res.send(`
         <html>
@@ -1065,14 +1076,14 @@ app.get('/approve-login', (req, res) => {
 // Minecraft-Bot-API-Routen
 app.post('/api/minecraft/start-bot', (req, res) => {
     const { username, serverIp, serverPort, botName, mcVersion } = req.body;
-    
+
     if (!username || !serverIp || !botName) {
         return res.status(400).json({
             success: false,
             error: 'Benutzername, Server-IP und Bot-Name sind erforderlich'
         });
     }
-    
+
     try {
         // Konfiguration für den Bot erstellen
         const botConfig = {
@@ -1082,10 +1093,10 @@ app.post('/api/minecraft/start-bot', (req, res) => {
             botName,
             mcVersion: mcVersion || '1.21.4'
         };
-        
+
         // Bot starten
         const result = minecraftBot.startBot(botConfig);
-        
+
         // Ergebnis zurückgeben
         if (result.success) {
             res.json({
@@ -1109,18 +1120,18 @@ app.post('/api/minecraft/start-bot', (req, res) => {
 
 app.post('/api/minecraft/stop-bot', (req, res) => {
     const { username } = req.body;
-    
+
     if (!username) {
         return res.status(400).json({
             success: false,
             error: 'Benutzername ist erforderlich'
         });
     }
-    
+
     try {
         // Bot stoppen
         const result = minecraftBot.stopBot(username);
-        
+
         // Ergebnis zurückgeben
         if (result.success) {
             res.json({
@@ -1144,18 +1155,18 @@ app.post('/api/minecraft/stop-bot', (req, res) => {
 
 app.post('/api/minecraft/send-command', (req, res) => {
     const { username, command } = req.body;
-    
+
     if (!username || !command) {
         return res.status(400).json({
             success: false,
             error: 'Benutzername und Befehl sind erforderlich'
         });
     }
-    
+
     try {
         // Befehl an Bot senden
         const result = minecraftBot.sendCommand(username, command);
-        
+
         // Ergebnis zurückgeben
         if (result.success) {
             res.json({
@@ -1180,18 +1191,18 @@ app.post('/api/minecraft/send-command', (req, res) => {
 
 app.get('/api/minecraft/bot-status', (req, res) => {
     const { username } = req.query;
-    
+
     if (!username) {
         return res.status(400).json({
             success: false,
             error: 'Benutzername ist erforderlich'
         });
     }
-    
+
     try {
         // Bot-Status abrufen
         const result = minecraftBot.getBotStatus(username);
-        
+
         // Ergebnis zurückgeben
         if (result.success) {
             res.json({
@@ -1214,16 +1225,37 @@ app.get('/api/minecraft/bot-status', (req, res) => {
 });
 
 // Server starten
+// Dotenv-Konfiguration laden
+dotenv.config();
+
+// Server starten
 app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server läuft auf http://0.0.0.0:${PORT}`);
+    const startupTime = new Date().toISOString();
+    console.log(`Herobrine AFK Bot Server gestartet auf http://0.0.0.0:${PORT} (${startupTime})`);
+    console.log(`Betriebsmodus: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`Minecraft-Bot-Version: ${process.env.DEFAULT_BOT_VERSION || '1.21.4'}`);
+    
+    // Logs-Verzeichnis erstellen, falls es nicht existiert
+    const logsDir = path.join(__dirname, 'logs');
+    if (!fs.existsSync(logsDir)) {
+        fs.mkdirSync(logsDir, { recursive: true });
+    }
+    
+    // Einfache Startlog-Datei erstellen
+    const logFileName = `HerobrineMaster_${startupTime.replace(/:/g, '-').replace(/\./g, '-')}.log`;
+    fs.writeFileSync(
+        path.join(logsDir, logFileName),
+        `Herobrine AFK Bot Server gestartet\nZeit: ${startupTime}\nPort: ${PORT}\n`,
+        'utf8'
+    );
     
     // Admin-Benutzer anlegen/aktualisieren (falls nicht vorhanden)
     const db = readDatabase();
-    
+
     if (!db.users) {
         db.users = {};
     }
-    
+
     // Admin-Konto
     if (!db.users['admin@herobrine.de']) {
         db.users['admin@herobrine.de'] = {
@@ -1235,7 +1267,7 @@ app.listen(PORT, '0.0.0.0', () => {
             role: 'admin',
             created: new Date().toISOString()
         };
-        
+
         // Demo-Benutzer hinzufügen
         if (!db.users['demo@example.com']) {
             db.users['demo@example.com'] = {
@@ -1246,10 +1278,10 @@ app.listen(PORT, '0.0.0.0', () => {
                 verified: true,
                 created: new Date().toISOString()
             };
-            
+
             console.log("Registrierung für: demo@example.com, Benutzername: DemoUser");
         }
-        
+
         // Zusätzlichen Benutzer hinzufügen
         if (!db.users['TurboKid@outlook.de']) {
             db.users['TurboKid@outlook.de'] = {
@@ -1260,10 +1292,10 @@ app.listen(PORT, '0.0.0.0', () => {
                 verified: true,
                 created: new Date().toISOString()
             };
-            
+
             console.log("Registrierung für: TurboKid@outlook.de, Benutzername: TurboKid");
         }
-        
+
         writeDatabase(db);
         console.log("Einfache Datenbank initialisiert");
     }
