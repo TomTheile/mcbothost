@@ -12,6 +12,73 @@
             min-height: calc(100vh - 150px);
         }
         
+        /* Log Entry Styling */
+        .log-entry {
+            padding: 8px 12px;
+            border-bottom: 1px solid #eaeaea;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .log-entry:hover {
+            background-color: #f9f9f9;
+        }
+        
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+        
+        .log-time {
+            color: #888;
+            margin-right: 10px;
+            font-size: 0.9em;
+            flex: 0 0 110px;
+        }
+        
+        .log-type {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 3px;
+            color: #fff;
+            font-size: 0.75em;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-right: 10px;
+            flex: 0 0 60px;
+            text-align: center;
+        }
+        
+        .log-type.success {
+            background-color: #28a745;
+        }
+        
+        .log-type.error {
+            background-color: #dc3545;
+        }
+        
+        .log-type.warning {
+            background-color: #ffc107;
+            color: #333;
+        }
+        
+        .log-type.info {
+            background-color: #17a2b8;
+        }
+        
+        .log-type.command {
+            background-color: #6f42c1;
+        }
+        
+        .log-type.debug {
+            background-color: #6c757d;
+        }
+        
+        .log-message {
+            flex: 1;
+        }
+        
         /* Sidebar */
         .sidebar {
             background-color: rgba(0, 0, 0, 0.7);
@@ -105,6 +172,82 @@
             margin: 0;
         }
         
+        /* Einstellungen Seite */
+        .settings-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .settings-section {
+            background-color: rgba(0, 0, 0, 0.7);
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        
+        .settings-section h3 {
+            color: #1eff00;
+            margin-top: 0;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #333;
+        }
+        
+        .settings-form {
+            display: grid;
+            gap: 15px;
+        }
+        
+        .notification-options {
+            display: grid;
+            gap: 10px;
+        }
+        
+        .notification-option {
+            padding: 8px 0;
+        }
+        
+        .notification-option label {
+            display: flex;
+            align-items: center;
+            color: #e0e0e0;
+            cursor: pointer;
+        }
+        
+        .notification-option input[type="checkbox"] {
+            margin-right: 10px;
+        }
+        
+        .account-status {
+            display: grid;
+            gap: 10px;
+        }
+        
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #333;
+        }
+        
+        .status-item:last-of-type {
+            border-bottom: none;
+        }
+        
+        .status-item strong {
+            color: #a0a0a0;
+        }
+        
+        .status-item span {
+            color: #1eff00;
+            font-weight: bold;
+        }
+        
+        .status-actions {
+            margin-top: 15px;
+        }
+        
         .action-buttons {
             display: flex;
             gap: 10px;
@@ -194,6 +337,30 @@
         .bot-header h3 {
             color: #1eff00;
             margin: 0;
+        }
+        
+        .bot-filter {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .bot-filter select,
+        .bot-filter input {
+            padding: 5px 10px;
+            background-color: rgba(0, 0, 0, 0.5);
+            border: 1px solid #333;
+            color: #e0e0e0;
+            border-radius: 4px;
+        }
+        
+        .bot-filter input {
+            width: 150px;
+        }
+        
+        .bot-filter select:focus,
+        .bot-filter input:focus {
+            border-color: #1eff00;
+            outline: none;
         }
         
         .bot-grid {
@@ -675,46 +842,21 @@
                     <div class="bot-container">
                         <div class="bot-header">
                             <h3>Deine Bots</h3>
+                            <div class="bot-filter">
+                                <select id="bot-status-filter" onchange="filterBots()">
+                                    <option value="all">Alle anzeigen</option>
+                                    <option value="online">Nur Online</option>
+                                    <option value="offline">Nur Offline</option>
+                                </select>
+                                <input type="text" id="bot-search" placeholder="Bot suchen..." oninput="filterBots()">
+                            </div>
                         </div>
                         
                         <div class="bot-grid" id="bot-grid">
                             <!-- Bot cards will be added here dynamically -->
-                            <div class="bot-card online">
-                                <div class="bot-status online"></div>
-                                <h4 class="bot-name">TestBot</h4>
-                                <p class="bot-server">mc.example.com:25565</p>
-                                <div class="bot-details">
-                                    <div class="bot-detail">
-                                        Version: <span>1.20.4</span>
-                                    </div>
-                                    <div class="bot-detail">
-                                        Online seit: <span>2h 15m</span>
-                                    </div>
-                                </div>
-                                <div class="bot-actions">
-                                    <button class="bot-btn">Logs</button>
-                                    <button class="bot-btn">Details</button>
-                                    <button class="bot-btn stop">Stoppen</button>
-                                </div>
-                            </div>
-                            
-                            <div class="bot-card offline">
-                                <div class="bot-status offline"></div>
-                                <h4 class="bot-name">FarmBot</h4>
-                                <p class="bot-server">play.hypixel.net:25565</p>
-                                <div class="bot-details">
-                                    <div class="bot-detail">
-                                        Version: <span>1.8.9</span>
-                                    </div>
-                                    <div class="bot-detail">
-                                        Status: <span>Offline</span>
-                                    </div>
-                                </div>
-                                <div class="bot-actions">
-                                    <button class="bot-btn">Logs</button>
-                                    <button class="bot-btn">Details</button>
-                                    <button class="bot-btn start">Starten</button>
-                                </div>
+                            <div style="text-align: center; padding: 30px; color: #a0a0a0; width: 100%;" id="no-bots-message">
+                                <div style="font-size: 48px; margin-bottom: 20px;">🤖</div>
+                                <p>Du hast noch keine Bots erstellt. <br>Klicke auf "Neuen Bot erstellen", um deinen ersten Bot zu starten.</p>
                             </div>
                         </div>
                     </div>
@@ -727,31 +869,20 @@
                         
                         <div id="log-entries">
                             <!-- Log entries will be added here dynamically -->
-                            <div class="log-entry">
-                                <span class="log-time">19.03.2023 14:32</span>
-                                <span class="log-type success">Erfolg</span>
-                                <span class="log-message">Bot 'TestBot' wurde erfolgreich verbunden.</span>
-                            </div>
-                            <div class="log-entry">
-                                <span class="log-time">19.03.2023 14:30</span>
+                            <div class="log-entry" onclick="viewLogDetails(this)">
+                                <span class="log-time" id="current-time-1"></span>
                                 <span class="log-type info">Info</span>
-                                <span class="log-message">Bot 'TestBot' wird gestartet...</span>
+                                <span class="log-message">Dashboard geladen. Bereit zum Erstellen deines ersten Bots.</span>
                             </div>
-                            <div class="log-entry">
-                                <span class="log-time">19.03.2023 14:15</span>
-                                <span class="log-type error">Fehler</span>
-                                <span class="log-message">Bot 'FarmBot' konnte nicht verbinden: Zeitüberschreitung.</span>
-                            </div>
-                            <div class="log-entry">
-                                <span class="log-time">19.03.2023 14:10</span>
-                                <span class="log-type info">Info</span>
-                                <span class="log-message">Bot 'FarmBot' wird gestartet...</span>
-                            </div>
-                            <div class="log-entry">
-                                <span class="log-time">19.03.2023 13:45</span>
+                            <div class="log-entry" onclick="viewLogDetails(this)">
+                                <span class="log-time" id="current-time-2"></span>
                                 <span class="log-type info">Info</span>
                                 <span class="log-message">Anmeldung erfolgreich.</span>
                             </div>
+                            <script>
+                                document.getElementById('current-time-1').textContent = new Date().toLocaleString();
+                                document.getElementById('current-time-2').textContent = new Date().toLocaleString();
+                            </script>
                         </div>
                     </div>
                 </div>
@@ -767,11 +898,94 @@
                 
                 <!-- Settings Page -->
                 <div class="dashboard-page" id="settings-page">
-                    <!-- Settings content will be implemented in the future -->
                     <div class="dashboard-header">
                         <h2>Einstellungen</h2>
                     </div>
-                    <p>Kontoeinstellungen werden in Kürze verfügbar sein.</p>
+                    
+                    <div class="settings-container">
+                        <div class="settings-section">
+                            <h3>Kontoeinstellungen</h3>
+                            <div class="settings-form">
+                                <div class="form-group">
+                                    <label for="user-username">Benutzername</label>
+                                    <input type="text" id="user-username" placeholder="Dein Benutzername">
+                                </div>
+                                <div class="form-group">
+                                    <label for="user-email">E-Mail-Adresse</label>
+                                    <input type="email" id="user-email" placeholder="Deine E-Mail-Adresse" disabled>
+                                </div>
+                                <div class="form-actions">
+                                    <button class="action-btn" onclick="saveUserSettings()">Speichern</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="settings-section">
+                            <h3>Passwort ändern</h3>
+                            <div class="settings-form">
+                                <div class="form-group">
+                                    <label for="current-password">Aktuelles Passwort</label>
+                                    <input type="password" id="current-password" placeholder="Dein aktuelles Passwort">
+                                </div>
+                                <div class="form-group">
+                                    <label for="new-password">Neues Passwort</label>
+                                    <input type="password" id="new-password" placeholder="Neues Passwort">
+                                </div>
+                                <div class="form-group">
+                                    <label for="confirm-password">Passwort bestätigen</label>
+                                    <input type="password" id="confirm-password" placeholder="Neues Passwort wiederholen">
+                                </div>
+                                <div class="form-actions">
+                                    <button class="action-btn" onclick="changePassword()">Passwort ändern</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="settings-section">
+                            <h3>Benachrichtigungen</h3>
+                            <div class="notification-options">
+                                <div class="notification-option">
+                                    <label>
+                                        <input type="checkbox" id="notify-bot-offline">
+                                        Benachrichtigen, wenn ein Bot offline geht
+                                    </label>
+                                </div>
+                                <div class="notification-option">
+                                    <label>
+                                        <input type="checkbox" id="notify-errors">
+                                        Benachrichtigungen bei Fehlern
+                                    </label>
+                                </div>
+                                <div class="notification-option">
+                                    <label>
+                                        <input type="checkbox" id="notify-updates">
+                                        Benachrichtigungen über Systemupdates
+                                    </label>
+                                </div>
+                                <div class="form-actions">
+                                    <button class="action-btn" onclick="saveNotificationSettings()">Einstellungen speichern</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="settings-section">
+                            <h3>Konto-Status</h3>
+                            <div class="account-status">
+                                <div class="status-item">
+                                    <strong>Konto-Typ:</strong> <span id="account-type">Standard</span>
+                                </div>
+                                <div class="status-item">
+                                    <strong>Bot-Limit:</strong> <span id="bot-limit">1</span>
+                                </div>
+                                <div class="status-item">
+                                    <strong>Registriert seit:</strong> <span id="registered-date">01.01.2023</span>
+                                </div>
+                                <div class="status-actions">
+                                    <button class="action-btn" id="upgrade-btn" onclick="window.location.href='payment.html'">Auf Premium upgraden</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 
                 <!-- Admin Page -->
@@ -816,6 +1030,30 @@
             // Authentifizierung überprüfen
             if (!checkAuthentication()) {
                 return;
+            }
+            
+            // Benachrichtigungseinstellungen beim Laden initialisieren
+            document.getElementById('notify-bot-offline').checked = localStorage.getItem('notify_bot_offline') === 'true';
+            document.getElementById('notify-errors').checked = localStorage.getItem('notify_errors') === 'true';
+            document.getElementById('notify-updates').checked = localStorage.getItem('notify_updates') === 'true';
+            
+            // Benutzername in Einstellungen eintragen
+            document.getElementById('user-username').value = localStorage.getItem('username') || '';
+            document.getElementById('user-email').value = localStorage.getItem('email') || '';
+            
+            // Konto-Statusinformationen aktualisieren
+            const isPremium = localStorage.getItem('is_premium') === 'true';
+            document.getElementById('account-type').textContent = isPremium ? 'Premium' : 'Standard';
+            document.getElementById('bot-limit').textContent = isPremium ? 'Unbegrenzt' : '1';
+            
+            // Registrierungsdatum
+            const registeredDate = localStorage.getItem('registered_date') || new Date().toLocaleDateString();
+            document.getElementById('registered-date').textContent = registeredDate;
+            
+            // Upgrade-Button ausblenden, wenn bereits Premium
+            if (isPremium) {
+                document.getElementById('upgrade-btn').style.display = 'none';
+                document.getElementById('upgrade-account-btn').style.display = 'none';
             }
             
             // Elemente referenzieren
@@ -950,16 +1188,287 @@
          * Dashboard aktualisieren
          */
         function refreshDashboard() {
-            // Hier würde in einer echten Anwendung eine API-Anfrage gemacht werden
-            // Für dieses Beispiel simulieren wir Daten
+            // Auf reale API zugreifen
+            fetch('/api/bots/status?userId=' + encodeURIComponent(localStorage.getItem('user_id')), {
+                headers: { 
+                    'Authorization': 'Bearer ' + localStorage.getItem('token')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Statistiken aktualisieren
+                    document.getElementById('total-bots').textContent = data.bots ? data.bots.length : '0';
+                    document.getElementById('online-time').textContent = data.totalOnlineTime || '0h 0m';
+                    document.getElementById('active-bots').textContent = data.bots ? data.bots.filter(bot => bot.status === 'online').length : '0';
+                    document.getElementById('total-servers').textContent = data.totalServers || '0';
+                    
+                    // Bot-Karten erstellen und anzeigen
+                    const botGrid = document.getElementById('bot-grid');
+                    
+                    // "Keine Bots" Nachricht anzeigen oder verstecken
+                    const noBotMessage = document.getElementById('no-bots-message');
+                    if (data.bots && data.bots.length > 0) {
+                        // Bots vorhanden
+                        noBotMessage.style.display = 'none';
+                        
+                        // Bot-Karten erstellen
+                        data.bots.forEach(bot => {
+                            // Vorhandene Karte finden oder neue erstellen
+                            let botCard = document.getElementById('bot-' + bot.id);
+                            
+                            if (!botCard) {
+                                // Neue Karte erstellen
+                                botCard = document.createElement('div');
+                                botCard.id = 'bot-' + bot.id;
+                                botCard.className = 'bot-card ' + (bot.status === 'online' ? 'online' : 'offline');
+                                
+                                // Karte ins Grid einfügen
+                                botGrid.appendChild(botCard);
+                            } else {
+                                // Vorhandene Karte aktualisieren
+                                botCard.className = 'bot-card ' + (bot.status === 'online' ? 'online' : 'offline');
+                            }
+                            
+                            // Karten-Inhalt aktualisieren
+                            botCard.innerHTML = `
+                                <div class="bot-status ${bot.status}"></div>
+                                <h4 class="bot-name">${bot.username}</h4>
+                                <p class="bot-server">${bot.server}</p>
+                                <div class="bot-details">
+                                    <div class="bot-detail">
+                                        Version: <span>${bot.version || '1.16.5'}</span>
+                                    </div>
+                                    <div class="bot-detail">
+                                        ${bot.status === 'online' 
+                                            ? 'Online seit: <span>' + (bot.uptime || '0m') + '</span>' 
+                                            : 'Status: <span>Offline</span>'}
+                                    </div>
+                                </div>
+                                <div class="bot-actions">
+                                    <button class="bot-btn" onclick="viewBotLogs('${bot.id}')">Logs</button>
+                                    <button class="bot-btn" onclick="viewBotDetails('${bot.id}')">Details</button>
+                                    ${bot.status === 'online' 
+                                        ? '<button class="bot-btn stop" onclick="stopBot(\'' + bot.id + '\')">Stoppen</button>' 
+                                        : '<button class="bot-btn start" onclick="startBot(\'' + bot.id + '\')">Starten</button>'}
+                                </div>
+                            `;
+                        });
+                        
+                        // Entferne Karten von gelöschten Bots
+                        const allBotCards = document.querySelectorAll('.bot-card');
+                        allBotCards.forEach(card => {
+                            const botId = card.id.replace('bot-', '');
+                            if (!data.bots.find(bot => bot.id === botId)) {
+                                card.remove();
+                            }
+                        });
+                    } else {
+                        // Keine Bots vorhanden
+                        noBotMessage.style.display = 'block';
+                        
+                        // Entferne alle Bot-Karten
+                        const allBotCards = document.querySelectorAll('.bot-card');
+                        allBotCards.forEach(card => card.remove());
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Fehler beim Aktualisieren des Dashboards:', error);
+                // Bei Fehlern Standardwerte anzeigen
+                document.getElementById('total-bots').textContent = '0';
+                document.getElementById('online-time').textContent = '0h 0m';
+                document.getElementById('active-bots').textContent = '0';
+                document.getElementById('total-servers').textContent = '0';
+            });
+        }
+        
+        /**
+         * Log-Details anzeigen
+         * @param {HTMLElement} logEntry - Der Log-Eintrag
+         */
+        function viewLogDetails(logEntry) {
+            const time = logEntry.querySelector('.log-time').textContent;
+            const type = logEntry.querySelector('.log-type').textContent;
+            const message = logEntry.querySelector('.log-message').textContent;
             
-            // Statistiken aktualisieren
-            document.getElementById('total-bots').textContent = '2';
-            document.getElementById('online-time').textContent = '2h 15m';
-            document.getElementById('active-bots').textContent = '1';
-            document.getElementById('total-servers').textContent = '2';
+            // Logs-Modal öffnen
+            const logModal = document.createElement('div');
+            logModal.className = 'modal';
+            logModal.style.display = 'block';
             
-            // Hier würden in einer echten Anwendung die Bots aus der API geladen und angezeigt werden
+            logModal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>Log-Details</h3>
+                        <button class="close-modal" onclick="this.parentNode.parentNode.parentNode.remove()">×</button>
+                    </div>
+                    <div style="padding: 20px;">
+                        <div style="margin-bottom: 15px;">
+                            <strong>Zeit:</strong> ${time}
+                        </div>
+                        <div style="margin-bottom: 15px;">
+                            <strong>Typ:</strong> 
+                            <span class="log-type ${type.toLowerCase()}" style="display: inline-block; margin-left: 5px;">${type}</span>
+                        </div>
+                        <div style="margin-bottom: 15px;">
+                            <strong>Nachricht:</strong> 
+                            <p style="margin-top: 5px; line-height: 1.5;">${message}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(logModal);
+        }
+
+        /**
+         * Bot-Logs anzeigen
+         * @param {string} botId - Die ID des Bots
+         */
+        function viewBotLogs(botId) {
+            // Logs-Modal öffnen
+            const logModal = document.createElement('div');
+            logModal.className = 'modal';
+            logModal.style.display = 'block';
+            
+            logModal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>Bot-Logs</h3>
+                        <button class="close-modal" onclick="this.parentNode.parentNode.parentNode.remove()">×</button>
+                    </div>
+                    <div id="bot-logs-content" style="max-height: 400px; overflow-y: auto;">
+                        <div style="text-align: center; padding: 20px;">
+                            <div class="loader" style="border: 4px solid #f3f3f3; border-top: 4px solid #1eff00; border-radius: 50%; width: 30px; height: 30px; animation: spin 2s linear infinite; margin: 0 auto;"></div>
+                            <p>Logs werden geladen...</p>
+                        </div>
+                        <style>
+                            @keyframes spin {
+                                0% { transform: rotate(0deg); }
+                                100% { transform: rotate(360deg); }
+                            }
+                        </style>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(logModal);
+            
+            // Logs vom Server abrufen
+            fetch('/api/bots/logs?botId=' + encodeURIComponent(botId), {
+                headers: { 
+                    'Authorization': 'Bearer ' + localStorage.getItem('token')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                const logsContent = document.getElementById('bot-logs-content');
+                
+                if (data.success && data.logs && data.logs.length > 0) {
+                    let logsHTML = '';
+                    
+                    data.logs.forEach(log => {
+                        logsHTML += `
+                            <div class="log-entry" onclick="viewLogDetails(this)">
+                                <span class="log-time">${log.timestamp}</span>
+                                <span class="log-type ${log.type}">${log.type}</span>
+                                <span class="log-message">${log.message}</span>
+                            </div>
+                        `;
+                    });
+                    
+                    logsContent.innerHTML = logsHTML;
+                } else {
+                    logsContent.innerHTML = '<p style="text-align: center; padding: 20px;">Keine Logs vorhanden.</p>';
+                }
+            })
+            .catch(error => {
+                console.error('Fehler beim Abrufen der Logs:', error);
+                const logsContent = document.getElementById('bot-logs-content');
+                logsContent.innerHTML = '<p style="text-align: center; color: #ff5555; padding: 20px;">Fehler beim Abrufen der Logs.</p>';
+            });
+        }
+        
+        /**
+         * Bot-Details anzeigen
+         * @param {string} botId - Die ID des Bots
+         */
+        function viewBotDetails(botId) {
+            // Bot-Details-Modal öffnen
+            const detailsModal = document.getElementById('bot-details-modal');
+            const detailsContent = document.getElementById('bot-details-content');
+            
+            // Lade-Animation anzeigen
+            detailsContent.innerHTML = `
+                <div style="text-align: center; padding: 20px;">
+                    <div class="loader" style="border: 4px solid #f3f3f3; border-top: 4px solid #1eff00; border-radius: 50%; width: 30px; height: 30px; animation: spin 2s linear infinite; margin: 0 auto;"></div>
+                    <p>Details werden geladen...</p>
+                </div>
+            `;
+            
+            detailsModal.style.display = 'block';
+            
+            // Schließen-Button einrichten
+            document.getElementById('close-bot-details').onclick = function() {
+                detailsModal.style.display = 'none';
+            };
+            
+            // Details vom Server abrufen
+            fetch('/api/bots/details?botId=' + encodeURIComponent(botId), {
+                headers: { 
+                    'Authorization': 'Bearer ' + localStorage.getItem('token')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.bot) {
+                    const bot = data.bot;
+                    
+                    // Details anzeigen
+                    detailsContent.innerHTML = `
+                        <div class="bot-details-grid">
+                            <div class="bot-detail-item">
+                                <strong>Name:</strong> ${bot.username}
+                            </div>
+                            <div class="bot-detail-item">
+                                <strong>Server:</strong> ${bot.server}
+                            </div>
+                            <div class="bot-detail-item">
+                                <strong>Status:</strong> <span class="${bot.status === 'online' ? 'status-online' : 'status-offline'}">${bot.status === 'online' ? 'Online' : 'Offline'}</span>
+                            </div>
+                            <div class="bot-detail-item">
+                                <strong>Version:</strong> ${bot.version || '1.16.5'}
+                            </div>
+                            <div class="bot-detail-item">
+                                <strong>Erstellt am:</strong> ${bot.createdAt || 'Unbekannt'}
+                            </div>
+                            <div class="bot-detail-item">
+                                <strong>Letzter Status:</strong> ${bot.lastStatus || 'Unbekannt'}
+                            </div>
+                            <div class="bot-detail-item">
+                                <strong>Auto-Reconnect:</strong> ${bot.autoReconnect ? 'Aktiviert' : 'Deaktiviert'}
+                            </div>
+                            <div class="bot-detail-item">
+                                <strong>Anti-AFK:</strong> ${bot.antiAFK ? 'Aktiviert' : 'Deaktiviert'}
+                            </div>
+                        </div>
+                        
+                        <div class="bot-actions" style="margin-top: 20px;">
+                            ${bot.status === 'online' 
+                                ? '<button class="bot-btn stop" onclick="stopBot(\'' + bot.id + '\')">Bot stoppen</button>' 
+                                : '<button class="bot-btn start" onclick="startBot(\'' + bot.id + '\')">Bot starten</button>'}
+                            <button class="bot-btn" onclick="viewBotLogs('${bot.id}')">Logs anzeigen</button>
+                        </div>
+                    `;
+                } else {
+                    detailsContent.innerHTML = '<p style="text-align: center; padding: 20px;">Keine Details verfügbar.</p>';
+                }
+            })
+            .catch(error => {
+                console.error('Fehler beim Abrufen der Bot-Details:', error);
+                detailsContent.innerHTML = '<p style="text-align: center; color: #ff5555; padding: 20px;">Fehler beim Abrufen der Bot-Details.</p>';
+            });
         }
         
         /**
@@ -1024,6 +1533,152 @@
                 console.error('Fehler:', error);
                 showToast('Serverfehler beim Stoppen des Bots', 'error');
             });
+        }
+        
+        /**
+         * Filtert die angezeigten Bots basierend auf Status und Suchfilter
+         */
+        function filterBots() {
+            const statusFilter = document.getElementById('bot-status-filter').value;
+            const searchFilter = document.getElementById('bot-search').value.toLowerCase();
+            const botCards = document.querySelectorAll('.bot-card');
+            
+            botCards.forEach(card => {
+                // Status prüfen
+                const isOnline = card.classList.contains('online');
+                let statusMatch = true;
+                
+                if (statusFilter === 'online') {
+                    statusMatch = isOnline;
+                } else if (statusFilter === 'offline') {
+                    statusMatch = !isOnline;
+                }
+                
+                // Namen und Server prüfen
+                const botName = card.querySelector('.bot-name').textContent.toLowerCase();
+                const botServer = card.querySelector('.bot-server').textContent.toLowerCase();
+                const searchMatch = botName.includes(searchFilter) || botServer.includes(searchFilter);
+                
+                // Karte anzeigen oder verstecken
+                if (statusMatch && searchMatch) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+            
+            // "Keine Bots" Nachricht anzeigen, wenn keine Bots sichtbar sind
+            const noBotMessage = document.getElementById('no-bots-message');
+            const visibleBots = document.querySelectorAll('.bot-card[style="display: block;"]').length;
+            
+            if (visibleBots === 0) {
+                // Wenn keine Bots angezeigt werden, Nachricht ändern
+                noBotMessage.querySelector('p').textContent = 'Keine Bots entsprechen deinen Filterkriterien.';
+                noBotMessage.style.display = 'block';
+            } else {
+                noBotMessage.style.display = 'none';
+            }
+        }
+        
+        /**
+         * Benutzereinstellungen speichern
+         */
+        function saveUserSettings() {
+            const username = document.getElementById('user-username').value;
+            
+            if (!username) {
+                showToast('Bitte gib einen Benutzernamen ein.', 'error');
+                return;
+            }
+            
+            // In localStorage speichern (in einer vollständigen Implementierung würde dies an einen Server gesendet)
+            localStorage.setItem('username', username);
+            
+            // UI aktualisieren
+            document.getElementById('username-display').textContent = username;
+            document.getElementById('user-initials').textContent = username.charAt(0).toUpperCase();
+            
+            // Erfolgsnachricht anzeigen
+            showToast('Einstellungen wurden gespeichert!', 'success');
+            
+            // Optionalen API-Call simulieren (für Produktionsumgebung)
+            console.log('Benutzereinstellungen gespeichert:', {
+                username: username,
+                userId: localStorage.getItem('user_id')
+            });
+        }
+        
+        /**
+         * Passwort ändern
+         */
+        function changePassword() {
+            const currentPassword = document.getElementById('current-password').value;
+            const newPassword = document.getElementById('new-password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+            
+            if (!currentPassword || !newPassword || !confirmPassword) {
+                showToast('Bitte fülle alle Passwortfelder aus.', 'error');
+                return;
+            }
+            
+            if (newPassword !== confirmPassword) {
+                showToast('Die neuen Passwörter stimmen nicht überein.', 'error');
+                return;
+            }
+            
+            if (newPassword.length < 6) {
+                showToast('Das neue Passwort muss mindestens 6 Zeichen lang sein.', 'error');
+                return;
+            }
+            
+            // Für Demonstrationszwecke simulieren wir eine API-Anfrage
+            // In einer Produktionsumgebung würde hier ein echter API-Call stehen
+            
+            console.log('Passwort ändern für Benutzer:', {
+                userId: localStorage.getItem('user_id'),
+                email: localStorage.getItem('email')
+            });
+            
+            // Passwortfelder zurücksetzen
+            document.getElementById('current-password').value = '';
+            document.getElementById('new-password').value = '';
+            document.getElementById('confirm-password').value = '';
+            
+            showToast('Passwort wurde erfolgreich geändert!', 'success');
+        }
+        
+        /**
+         * Benachrichtigungseinstellungen speichern
+         */
+        function saveNotificationSettings() {
+            const notifyBotOffline = document.getElementById('notify-bot-offline').checked;
+            const notifyErrors = document.getElementById('notify-errors').checked;
+            const notifyUpdates = document.getElementById('notify-updates').checked;
+            
+            // Einstellungen im localStorage speichern
+            localStorage.setItem('notify_bot_offline', notifyBotOffline);
+            localStorage.setItem('notify_errors', notifyErrors);
+            localStorage.setItem('notify_updates', notifyUpdates);
+            
+            // Erfolgsnachricht anzeigen
+            showToast('Benachrichtigungseinstellungen wurden gespeichert!', 'success');
+            
+            // Optionalen API-Call simulieren (für Produktionsumgebung)
+            console.log('Benachrichtigungseinstellungen gespeichert:', {
+                userId: localStorage.getItem('user_id'),
+                settings: {
+                    notifyBotOffline,
+                    notifyErrors,
+                    notifyUpdates
+                }
+            });
+            
+            // Test-Benachrichtigung zeigen, wenn Benachrichtigungen aktiviert sind
+            if (notifyUpdates) {
+                setTimeout(() => {
+                    showToast('Benachrichtigungen sind jetzt aktiv!', 'info');
+                }, 1000);
+            }
         }
     </script>
 </body>
