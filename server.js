@@ -357,6 +357,18 @@ app.post('/api/users/login', async (req, res) => {
         });
     }
 
+    // Verbindung prüfen
+    try {
+        const db = readDatabase();
+        console.log("Datenbankverbindung erfolgreich");
+    } catch (error) {
+        console.error("Datenbankfehler:", error);
+        return res.status(500).json({
+            success: false,
+            error: 'Verbindungsfehler beim Anmelden. Bitte versuche es später erneut.'
+        });
+    }
+
     // Datenbank lesen
     const db = readDatabase();
 
