@@ -821,7 +821,7 @@ app.get('/api/admin/logs', (req, res) => {
     // Prüfen, ob der anfragende Benutzer ein Admin ist
     const admin = db.users[admin_email];
     if (!admin || admin.role !== 'admin') {
-        return res.status(403).json({
+        return res.status403).json({
             success: false,
             error: 'Nicht autorisiert. Nur Administratoren können diese Aktion ausführen.'
         });
@@ -1156,9 +1156,11 @@ app.post('/api/minecraft/start-bot', (req, res) => {
             username,
             serverIp,
             serverPort: serverPort || '25565',
-            botName,
             mcVersion: mcVersion || '1.21.4'
         };
+
+        // Notiere Bot-Start in Logs
+        console.log(`Bot wird gestartet - Benutzer: ${username}, Server: ${serverIp}:${serverPort}`);
 
         // Bot starten
         const result = minecraftBot.startBot(botConfig);
@@ -1304,21 +1306,22 @@ app.listen(PORT, '0.0.0.0', (err) => {
     console.log(`Herobrine AFK Bot Server gestartet auf http://0.0.0.0:${PORT} (${startupTime})`);
     console.log(`Betriebsmodus: ${process.env.NODE_ENV || 'development'}`);
     console.log(`Minecraft-Bot-Version: ${process.env.DEFAULT_BOT_VERSION || '1.21.4'}`);
-    
-    // Logs-Verzeichnis erstellen, falls es nicht existiert
+    console.log('GitHub Integration aktiviert');
+
+    // Logs-Verzeichnis erstellen
     const logsDir = path.join(__dirname, 'logs');
     if (!fs.existsSync(logsDir)) {
         fs.mkdirSync(logsDir, { recursive: true });
     }
-    
-    // Einfache Startlog-Datei erstellen
-    const logFileName = `HerobrineMaster_${startupTime.replace(/:/g, '-').replace(/\./g, '-')}.log`;
+
+    // Server-Log erstellen
+    const logFileName = `server_${startupTime.replace(/:/g, '-').replace(/\./g, '-')}.log`;
     fs.writeFileSync(
         path.join(logsDir, logFileName),
         `Herobrine AFK Bot Server gestartet\nZeit: ${startupTime}\nPort: ${PORT}\n`,
         'utf8'
     );
-    
+
     // Admin-Benutzer anlegen/aktualisieren (falls nicht vorhanden)
     const db = readDatabase();
 
